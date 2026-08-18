@@ -57,8 +57,8 @@ export default function HeroReveal({ onVideoReady }) {
       // Set initial frame instantly without waiting for scroll
       video.currentTime = 0;
       if (onVideoReady) {
-        // slight delay to ensure the browser has rendered the video frame
-        setTimeout(onVideoReady, 500);
+        // Enforce a minimum 1.5s loading time for aesthetic purposes
+        setTimeout(onVideoReady, 1500);
       }
     };
 
