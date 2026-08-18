@@ -3,6 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
+# Source video file at root (already tracked in public/)
+fd254ffc-503e-438e-86ee-da85ecd269f9.mp4
+
 # Build output
 dist/
 dist-ssr/
