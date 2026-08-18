@@ -1,69 +1,78 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { drawRoad, resetRoad } from '../../canvas/roadRenderer';
-import { drawCar, preloadCarImage } from '../../canvas/carRenderer';
 import { drawGauge } from '../../canvas/gaugeRenderer';
 import { createSimulation } from '../../canvas/simulation';
 import './PerformanceSimulator.css';
 
-// Default simulation state (idle)
 const IDLE_STATE = { speed: 0, normalizedSpeed: 0, rpm: 0.1, gear: 1, gForce: 0, phase: 'idle' };
 
+// ── car DOM-element updater (called every frame, no React) ──────
+function updateCarImg(imgEl, W, H, normalizedSpeed) {
+  if (!imgEl) return;
+  // Car sits at ~55% height, shifts left slightly at speed
+  const baseX  = W * 0.42;
+  const baseY  = H * 0.52;
+  const shakeX = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.5 : 0;
+  const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 0.8 : 0;
+  const scale  = 0.78 + normalizedSpeed * 0.04; // very subtle grow at speed
+  const w      = Math.min(W * 0.48, 520);
+
+  imgEl.style.width     = `${w}px`;
+  imgEl.style.left      = `${baseX - w * 0.5 + shakeX}px`;
+  imgEl.style.top       = `${baseY - w * 0.22 + shakeY}px`;
+  imgEl.style.transform = `scaleX(-1) scale(${scale})`;     // mirror so car faces left (driving)
+}
+
 export default function PerformanceSimulator({ car }) {
-  const canvasRef      = useRef(null);
-  const simulationRef  = useRef(null);
-  const simStateRef    = useRef(IDLE_STATE);    // per-frame, no React re-render
-  const animFrameRef   = useRef(null);
-  const lastFrameTs    = useRef(0);
-  const isMountedRef   = useRef(true);
+  const canvasRef     = useRef(null);
+  const carImgRef     = useRef(null);        // ← DOM ref, not canvas
+  const simulationRef = useRef(null);
+  const simStateRef   = useRef(IDLE_STATE);
+  const animFrameRef  = useRef(null);
+  const lastFrameTs   = useRef(0);
+  const isMountedRef  = useRef(true);
 
-  const idleAudioRef   = useRef(null);
-  const accelAudioRef  = useRef(null);
+  const idleAudioRef  = useRef(null);
+  const accelAudioRef = useRef(null);
 
-  // React state only for UI buttons — NOT updated every frame
-  const [status,    setStatus]    = useState('idle');  // 'idle'|'running'|'complete'
+  const [status,    setStatus]    = useState('idle');
   const [isMuted,   setIsMuted]   = useState(false);
-  const [isDemo,    setIsDemo]    = useState(false);
-  const [runResult, setRunResult] = useState(null);    // { speed, isDemo }
+  const [runResult, setRunResult] = useState(null);
 
-  // ── Master draw loop (60fps, reads refs not state) ─────────────
+  // ── Master draw loop ─────────────────────────────────────────
   const drawLoop = useCallback((timestamp) => {
     const canvas = canvasRef.current;
     if (!canvas || !isMountedRef.current) return;
 
-    const deltaMs = Math.min(timestamp - lastFrameTs.current, 50); // cap delta at 50ms
+    const deltaMs = Math.min(timestamp - lastFrameTs.current, 50);
     lastFrameTs.current = timestamp;
 
-    const ctx  = canvas.getContext('2d');
-    const W    = canvas.width;
-    const H    = canvas.height;
-    const s    = simStateRef.current;
+    const ctx = canvas.getContext('2d');
+    const W   = canvas.width;
+    const H   = canvas.height;
+    const s   = simStateRef.current;
 
     ctx.clearRect(0, 0, W, H);
     drawRoad(ctx, W, H, s.normalizedSpeed, deltaMs, s.phase);
-    drawCar(ctx, car.images.side, W, H, s.normalizedSpeed, timestamp);
     drawGauge(ctx, W, H, s);
 
-    animFrameRef.current = requestAnimationFrame(drawLoop);
-  }, [car]);
+    // update car DOM image position directly — no React re-render
+    updateCarImg(carImgRef.current, W, H, s.normalizedSpeed);
 
-  // ── Restart draw loop when car changes ─────────────────────────
+    animFrameRef.current = requestAnimationFrame(drawLoop);
+  }, []);
+
+  // ── Boot / car change ────────────────────────────────────────
   useEffect(() => {
     isMountedRef.current = true;
-    preloadCarImage(car.images.side);
-
-    // Also preload front for completeness
-    preloadCarImage(car.images.front);
-
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     resetRoad();
+    lastFrameTs.current = 0;
     animFrameRef.current = requestAnimationFrame(drawLoop);
-
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
+    return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current); };
   }, [car, drawLoop]);
 
-  // ── Canvas resize observer ──────────────────────────────────────
+  // ── Canvas resize ────────────────────────────────────────────
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -77,12 +86,12 @@ export default function PerformanceSimulator({ car }) {
     return () => ro.disconnect();
   }, []);
 
-  // ── Audio ───────────────────────────────────────────────────────
+  // ── Audio setup ──────────────────────────────────────────────
   useEffect(() => {
-    if (idleAudioRef.current) { idleAudioRef.current.pause(); idleAudioRef.current.src = ''; }
+    if (idleAudioRef.current)  { idleAudioRef.current.pause();  idleAudioRef.current.src  = ''; }
     if (accelAudioRef.current) { accelAudioRef.current.pause(); accelAudioRef.current.src = ''; }
-    const idle  = new Audio(car.sound.idle);  idle.loop = true;  idle.volume  = 0;
-    const accel = new Audio(car.sound.acceleration); accel.loop = false; accel.volume = 0;
+    const idle  = new Audio(car.sound?.idle || '');  idle.loop = true;  idle.volume = 0;
+    const accel = new Audio(car.sound?.acceleration || ''); accel.loop = false; accel.volume = 0;
     idleAudioRef.current  = idle;
     accelAudioRef.current = accel;
   }, [car]);
@@ -97,12 +106,12 @@ export default function PerformanceSimulator({ car }) {
       isMountedRef.current = false;
       if (animFrameRef.current)  cancelAnimationFrame(animFrameRef.current);
       if (simulationRef.current) simulationRef.current.stop();
-      if (idleAudioRef.current)  idleAudioRef.current.pause();
-      if (accelAudioRef.current) accelAudioRef.current.pause();
+      idleAudioRef.current?.pause();
+      accelAudioRef.current?.pause();
     };
   }, []);
 
-  // ── Accelerate handler ──────────────────────────────────────────
+  // ── Accelerate ───────────────────────────────────────────────
   const handleAccelerate = useCallback(() => {
     if (simulationRef.current) simulationRef.current.stop();
     resetRoad();
@@ -124,11 +133,8 @@ export default function PerformanceSimulator({ car }) {
 
     const sim = createSimulation(
       car,
-      // onFrame — hot path, NO React state, only ref updates
       (state) => {
         simStateRef.current = state;
-
-        // Audio crossfade
         const sp = state.normalizedSpeed;
         if (idleAudio)  idleAudio.volume  = state.phase === 'decel' ? 0.1 + (1 - sp) * 0.25 : Math.max(0, 0.35 - sp * 0.35);
         if (accelAudio) {
@@ -141,14 +147,12 @@ export default function PerformanceSimulator({ car }) {
           }
         }
       },
-      // onComplete
       ({ isDemo: demo }) => {
         if (!isMountedRef.current) return;
         simStateRef.current = { ...IDLE_STATE, phase: 'complete' };
         setStatus('complete');
-        setIsDemo(demo);
         setRunResult({ isDemo: demo });
-        if (idleAudioRef.current)  idleAudioRef.current.pause();
+        idleAudioRef.current?.pause();
         if (accelAudioRef.current) {
           const fade = setInterval(() => {
             const a = accelAudioRef.current;
@@ -159,32 +163,44 @@ export default function PerformanceSimulator({ car }) {
         }
       }
     );
-
     simulationRef.current = sim;
     sim.start();
   }, [car, isMuted]);
 
   const handleReset = useCallback(() => {
-    if (simulationRef.current) simulationRef.current.reset();
+    simulationRef.current?.reset();
     simStateRef.current = IDLE_STATE;
     setStatus('idle');
     setRunResult(null);
     resetRoad();
-    if (idleAudioRef.current)  { idleAudioRef.current.pause(); }
-    if (accelAudioRef.current) { accelAudioRef.current.pause(); accelAudioRef.current.currentTime = 0; }
+    idleAudioRef.current?.pause();
+    if (accelAudioRef.current) {
+      accelAudioRef.current.pause();
+      accelAudioRef.current.currentTime = 0;
+    }
   }, []);
 
   return (
     <div className="perf-simulator">
+      {/* Road + gauge canvas */}
       <canvas ref={canvasRef} className="perf-canvas" />
 
-      {/* ── Minimal DOM overlay — only action controls ─── */}
+      {/* Car as DOM image — mix-blend-mode:multiply kills the studio BG */}
+      <img
+        ref={carImgRef}
+        src={car.images.side}
+        alt={car.name}
+        className="perf-car-img"
+        draggable={false}
+      />
+
+      {/* Minimal controls overlay */}
       <div className="perf-controls-overlay">
         {status === 'complete' ? (
           <div className="perf-complete-ui">
             <span className="perf-complete-label">RUN COMPLETE</span>
             {runResult?.isDemo && (
-              <span className="perf-demo-badge">DEMO SIMULATION — no verified 0–100 data</span>
+              <span className="perf-demo-badge">DEMO — no verified 0–100 data</span>
             )}
             <button className="perf-btn perf-btn--primary" onClick={handleReset} id="run-again-btn">
               ↺ RUN AGAIN
@@ -200,7 +216,6 @@ export default function PerformanceSimulator({ car }) {
             {status === 'running' ? '■ RUNNING' : '▶ ACCELERATE'}
           </button>
         )}
-
         <button
           className="perf-btn perf-btn--ghost"
           onClick={() => setIsMuted(m => !m)}

@@ -15,6 +15,19 @@
   display: block;
 }
 
+/* Car image — positioned via JS refs each frame, no React re-render */
+.perf-car-img {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  /* multiply blends the light studio background away against the dark canvas */
+  mix-blend-mode: multiply;
+  /* Slight contrast boost so the car pops on the dark road */
+  filter: contrast(1.08) brightness(0.92);
+  will-change: transform, left, top, width;
+  transition: none;
+}
+
 /* ── DOM Controls overlay — positioned at the bottom center ─── */
 .perf-controls-overlay {
   position: absolute;
