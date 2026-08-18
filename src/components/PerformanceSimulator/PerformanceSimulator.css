@@ -5,82 +5,82 @@
   min-height: 60vh;
   background: #000;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.perf-canvas {
+/* Layer 1: Road Background */
+.perf-canvas--bg {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
+  z-index: 1;
 }
 
-/* Car image — positioned via JS refs each frame, no React re-render */
+/* Layer 2: Car Image */
 .perf-car-img {
   position: absolute;
   pointer-events: none;
   user-select: none;
   will-change: transform, left, top, width;
-  transition: none;
+  transition: transform 0.3s ease;
+  z-index: 2;
 
   /*
    * Radial vignette mask: fades the rectangular studio-photo background
    * edges to transparent so only the car body is visible.
-   * This works correctly on both dark AND light backgrounds.
    */
   -webkit-mask-image: radial-gradient(
-    ellipse 82% 78% at 50% 52%,
-    black 38%,
-    rgba(0,0,0,0.7) 58%,
-    transparent 75%
+    ellipse 85% 75% at 50% 50%,
+    black 40%,
+    rgba(0,0,0,0.8) 60%,
+    transparent 80%
   );
   mask-image: radial-gradient(
-    ellipse 82% 78% at 50% 52%,
-    black 38%,
-    rgba(0,0,0,0.7) 58%,
-    transparent 75%
+    ellipse 85% 75% at 50% 50%,
+    black 40%,
+    rgba(0,0,0,0.8) 60%,
+    transparent 80%
   );
 
-  /* Slightly boost contrast so the car body reads well on dark road */
-  filter: contrast(1.12) brightness(0.88) drop-shadow(0 6px 20px rgba(0,0,0,0.9));
+  /* Boost contrast and darken to blend into the cinematic background */
+  filter: contrast(1.15) brightness(0.7) drop-shadow(0 20px 40px rgba(0,0,0,0.95));
+}
+
+/* Layer 3: Gauge Foreground */
+.perf-canvas--fg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none; /* Let clicks pass through to the button below if needed */
 }
 
 /* ── DOM Controls overlay — positioned at the bottom center ─── */
 .perf-controls-overlay {
   position: absolute;
-  bottom: 1.5rem;
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  z-index: 10;
-}
-
-/* ── Complete UI ─────────────────────────────────────────────── */
-.perf-complete-ui {
-  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.2rem;
+  z-index: 10;
+  width: 100%;
+  max-width: 320px;
 }
 
-.perf-complete-label {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
-  letter-spacing: 4px;
-  color: rgba(255,255,255,0.7);
-  text-shadow: 0 0 20px rgba(255,255,255,0.2);
-}
-
-.perf-demo-badge {
+/* Status Text (READY) */
+.perf-status-text {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 0.7rem;
-  letter-spacing: 2px;
-  color: rgba(255, 200, 0, 0.7);
-  border: 1px solid rgba(255, 200, 0, 0.3);
-  padding: 0.15rem 0.6rem;
-  border-radius: 2px;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
 }
 
 /* ── Buttons ─────────────────────────────────────────────────── */
@@ -89,42 +89,49 @@
   font-weight: 700;
   letter-spacing: 2px;
   border: none;
-  border-radius: 3px;
+  border-radius: 4px;
   cursor: pointer;
-  padding: 0.8rem 2rem;
-  font-size: 0.85rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
   text-transform: uppercase;
+  width: 100%;
 }
 
 .perf-btn--primary {
   background: var(--clr-accent, #e3000f);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(227, 0, 15, 0.35);
+  box-shadow: 0 4px 20px rgba(227, 0, 15, 0.25);
 }
 
 .perf-btn--primary:hover:not(:disabled) {
   background: #ff1a26;
-  box-shadow: 0 4px 30px rgba(227, 0, 15, 0.6);
+  box-shadow: 0 6px 25px rgba(227, 0, 15, 0.4);
   transform: translateY(-1px);
 }
 
 .perf-btn--running {
   background: rgba(227, 0, 15, 0.3) !important;
+  color: rgba(255, 255, 255, 0.5);
   cursor: not-allowed;
   box-shadow: none !important;
 }
 
 .perf-btn--ghost {
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.5);
-  border: 1px solid rgba(255,255,255,0.12);
-  padding: 0.8rem 1rem;
-  font-size: 1rem;
+  background: transparent;
+  color: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  width: auto;
+  position: absolute;
+  left: -4rem; /* Place to the left of the main button */
+  bottom: 0;
+  border-radius: 4px;
 }
 
 .perf-btn--ghost:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
   color: #fff;
 }
 

@@ -7,38 +7,41 @@ import './PerformanceSimulator.css';
 const IDLE_STATE = { speed: 0, normalizedSpeed: 0, rpm: 0.1, gear: 1, gForce: 0, phase: 'idle' };
 
 // ── car DOM-element updater (called every frame, no React) ──────
-function updateCarImg(imgEl, W, H, normalizedSpeed) {
+function updateCarImg(imgEl, W, H, normalizedSpeed, activeView) {
   if (!imgEl) return;
-  const shakeX = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.8 : 0;
-  const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 0.9 : 0;
-  const scale  = 1 + normalizedSpeed * 0.04;   // very subtle grow
+  const shakeX = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 2.5 : 0;
+  const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.5 : 0;
+  const scale  = 1 + normalizedSpeed * 0.05;   // slightly more pronounced grow
 
-  const w   = Math.min(W * 0.50, 560);
+  // Make the car much larger as requested (25-40% bigger)
+  const w   = Math.min(W * 0.75, 900);
   const bx  = (W - w) * 0.5 + shakeX;         // centered horizontally
-  const by  = H * 0.30 + shakeY;               // sits in upper-mid (above road horizon)
+  const by  = H * 0.18 + shakeY;               // sits above the gauge
 
   imgEl.style.width     = `${w}px`;
   imgEl.style.left      = `${bx}px`;
   imgEl.style.top       = `${by}px`;
-  // scaleX(-1) mirrors the car so it faces left (driving direction)
-  imgEl.style.transform = `scaleX(-1) scale(${scale})`;
+  
+  const mirror = activeView === 'side' ? 'scaleX(-1) ' : '';
+  imgEl.style.transform = `${mirror}scale(${scale})`;
 }
 
 export default function PerformanceSimulator({ car, activeView = 'hero', isMuted: externalMuted, externalMute = false }) {
-  const canvasRef     = useRef(null);
-  const carImgRef     = useRef(null);
-  const simulationRef = useRef(null);
-  const simStateRef   = useRef(IDLE_STATE);
-  const animFrameRef  = useRef(null);
-  const lastFrameTs   = useRef(0);
-  const isMountedRef  = useRef(true);
+  const roadCanvasRef   = useRef(null);
+  const gaugeCanvasRef  = useRef(null);
+  const carImgRef       = useRef(null);
+  const simulationRef   = useRef(null);
+  const simStateRef     = useRef(IDLE_STATE);
+  const animFrameRef    = useRef(null);
+  const lastFrameTs     = useRef(0);
+  const isMountedRef    = useRef(true);
 
-  const idleAudioRef  = useRef(null);
-  const accelAudioRef = useRef(null);
+  const idleAudioRef    = useRef(null);
+  const accelAudioRef   = useRef(null);
 
-  const [status,       setStatus]    = useState('idle');
+  const [status,       setStatus]       = useState('idle'); // 'idle' | 'running' | 'complete'
   const [internalMute, setInternalMute] = useState(false);
-  const [runResult,    setRunResult] = useState(null);
+  const [runResult,    setRunResult]    = useState(null);
 
   // Honour external mute from parent OR internal button
   const isMuted = externalMute ? !!externalMuted : internalMute;
@@ -48,26 +51,32 @@ export default function PerformanceSimulator({ car, activeView = 'hero', isMuted
 
   // ── Master draw loop ─────────────────────────────────────────
   const drawLoop = useCallback((timestamp) => {
-    const canvas = canvasRef.current;
-    if (!canvas || !isMountedRef.current) return;
+    const roadCanvas = roadCanvasRef.current;
+    const gaugeCanvas = gaugeCanvasRef.current;
+    if (!roadCanvas || !gaugeCanvas || !isMountedRef.current) return;
 
     const deltaMs = Math.min(timestamp - lastFrameTs.current, 50);
     lastFrameTs.current = timestamp;
 
-    const ctx = canvas.getContext('2d');
-    const W   = canvas.width;
-    const H   = canvas.height;
-    const s   = simStateRef.current;
+    const W = roadCanvas.width;
+    const H = roadCanvas.height;
+    const s = simStateRef.current;
 
-    ctx.clearRect(0, 0, W, H);
-    drawRoad(ctx, W, H, s.normalizedSpeed, deltaMs, s.phase);
-    drawGauge(ctx, W, H, s);
+    // Draw Road (Background Canvas)
+    const roadCtx = roadCanvas.getContext('2d');
+    roadCtx.clearRect(0, 0, W, H);
+    drawRoad(roadCtx, W, H, s.normalizedSpeed, deltaMs, s.phase);
+
+    // Draw Gauges (Foreground Canvas)
+    const gaugeCtx = gaugeCanvas.getContext('2d');
+    gaugeCtx.clearRect(0, 0, W, H);
+    drawGauge(gaugeCtx, W, H, s);
 
     // update car DOM image position directly — no React re-render
-    updateCarImg(carImgRef.current, W, H, s.normalizedSpeed);
+    updateCarImg(carImgRef.current, W, H, s.normalizedSpeed, activeView);
 
     animFrameRef.current = requestAnimationFrame(drawLoop);
-  }, []);
+  }, [activeView]);
 
   // ── Boot / car change ────────────────────────────────────────
   useEffect(() => {
@@ -81,15 +90,21 @@ export default function PerformanceSimulator({ car, activeView = 'hero', isMuted
 
   // ── Canvas resize ────────────────────────────────────────────
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const roadCanvas = roadCanvasRef.current;
+    const gaugeCanvas = gaugeCanvasRef.current;
+    if (!roadCanvas || !gaugeCanvas) return;
+    
     const ro = new ResizeObserver(() => {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      const w = roadCanvas.parentElement.offsetWidth;
+      const h = roadCanvas.parentElement.offsetHeight;
+      
+      roadCanvas.width = w;
+      roadCanvas.height = h;
+      gaugeCanvas.width = w;
+      gaugeCanvas.height = h;
     });
-    ro.observe(canvas);
-    canvas.width  = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    
+    ro.observe(roadCanvas.parentElement);
     return () => ro.disconnect();
   }, []);
 
@@ -189,10 +204,10 @@ export default function PerformanceSimulator({ car, activeView = 'hero', isMuted
 
   return (
     <div className="perf-simulator">
-      {/* Road + gauge canvas */}
-      <canvas ref={canvasRef} className="perf-canvas" />
+      {/* Background Canvas (Road) - z-index 1 */}
+      <canvas ref={roadCanvasRef} className="perf-canvas perf-canvas--bg" />
 
-      {/* Car image — angle changes with view tab */}
+      {/* Car image — mask-image vignette hides studio bg edges - z-index 2 */}
       <img
         ref={carImgRef}
         src={carImgSrc}
@@ -200,25 +215,28 @@ export default function PerformanceSimulator({ car, activeView = 'hero', isMuted
         className="perf-car-img"
         draggable={false}
         style={{
-          width: '46%',
-          left: '27%',
-          top: '28%',
+          width: '75%', // initial style matching the JS updater
+          left: '12.5%',
+          top: '18%',
           transform: activeView === 'side' ? 'scaleX(-1)' : 'none',
         }}
       />
 
+      {/* Foreground Canvas (Gauges) - z-index 3 */}
+      <canvas ref={gaugeCanvasRef} className="perf-canvas perf-canvas--fg" />
+
       {/* Minimal controls overlay */}
       <div className="perf-controls-overlay">
+        
+        {/* READY STATE TEXT */}
+        {status === 'idle' && (
+          <div className="perf-status-text">READY</div>
+        )}
+
         {status === 'complete' ? (
-          <div className="perf-complete-ui">
-            <span className="perf-complete-label">RUN COMPLETE</span>
-            {runResult?.isDemo && (
-              <span className="perf-demo-badge">DEMO — no verified 0–100 data</span>
-            )}
-            <button className="perf-btn perf-btn--primary" onClick={handleReset} id="run-again-btn">
-              ↺ RUN AGAIN
-            </button>
-          </div>
+          <button className="perf-btn perf-btn--primary" onClick={handleReset} id="run-again-btn">
+            ↺ RUN AGAIN
+          </button>
         ) : (
           <button
             className={`perf-btn perf-btn--primary${status === 'running' ? ' perf-btn--running' : ''}`}
@@ -226,9 +244,10 @@ export default function PerformanceSimulator({ car, activeView = 'hero', isMuted
             disabled={status === 'running'}
             id="accelerate-btn"
           >
-            {status === 'running' ? '■ RUNNING' : '▶ ACCELERATE'}
+            {status === 'running' ? 'ACCELERATING...' : '▶ ACCELERATE'}
           </button>
         )}
+        
         {/* Only show mute button when NOT controlled externally */}
         {!externalMute && (
           <button
