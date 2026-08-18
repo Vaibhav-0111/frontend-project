@@ -1,4 +1,5 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useScroll, useSpring, useMotionValueEvent } from 'framer-motion';
 import './HeroReveal.css';
 
 const mustangVideo = '/fd254ffc-503e-438e-86ee-da85ecd269f9.mp4';
@@ -6,65 +7,53 @@ const mustangVideo = '/fd254ffc-503e-438e-86ee-da85ecd269f9.mp4';
 export default function HeroReveal() {
   const videoRef = useRef(null);
   const sectionRef = useRef(null);
-  const rafRef = useRef(null);
-  const lastProgressRef = useRef(-1);
-  const isReadyRef = useRef(false);
+  const [isReady, setIsReady] = useState(false);
 
-  /* ── Scroll → currentTime mapping ─────────────────────────── */
-  const updateVideo = useCallback(() => {
+  // Track the scroll progress of this section exactly as we did manually:
+  // "start start" -> top of section hits top of viewport (0%)
+  // "end end" -> bottom of section hits bottom of viewport (100%)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Apply physics-based smoothing (LERP) to the chunky scroll values
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100, // Lower stiffness = softer spring
+    damping: 30,    // High damping = less bouncy, more gliding
+    restDelta: 0.001 // Precision to stop calculating
+  });
+
+  // Whenever the smoothed progress changes, update the video
+  useMotionValueEvent(smoothProgress, "change", (latest) => {
     const video = videoRef.current;
-    const section = sectionRef.current;
-    if (!video || !section || !isReadyRef.current) return;
-
-    const { top, height } = section.getBoundingClientRect();
-    const viewH = window.innerHeight;
-
-    // Progress 0 when section top is at viewport top
-    // Progress 1 when section bottom aligns with viewport bottom
-    const scrollable = height - viewH;
-    if (scrollable <= 0) return;
-
-    const raw = -top;                      // px scrolled into section
-    const progress = Math.min(1, Math.max(0, raw / scrollable));
-
-    // Increase threshold to prevent lag (fewer updates)
-    if (Math.abs(progress - lastProgressRef.current) < 0.002) return;
-    lastProgressRef.current = progress;
-
-    const targetTime = progress * video.duration;
-    // Clamp to valid range
-    video.currentTime = Math.min(targetTime, video.duration - 0.05); // slight padding
-  }, []);
-
-  const onScroll = useCallback(() => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(updateVideo);
-  }, [updateVideo]);
+    if (!video || !isReady) return;
+    
+    const targetTime = latest * video.duration;
+    // Clamp to valid range to prevent throwing an error at the very end
+    video.currentTime = Math.min(targetTime, video.duration - 0.05);
+  });
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    /* Necessary for iOS/Safari seek-without-play */
+    // Necessary for iOS/Safari to allow programmatic seeking without playing
     video.load();
 
     const onReady = () => {
-      isReadyRef.current = true;
-      updateVideo(); // set initial frame
+      setIsReady(true);
+      // Set initial frame instantly without waiting for scroll
+      video.currentTime = 0;
     };
 
     video.addEventListener('loadedmetadata', onReady);
-    // If already loaded (cached)
     if (video.readyState >= 1) onReady();
-
-    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
       video.removeEventListener('loadedmetadata', onReady);
-      window.removeEventListener('scroll', onScroll);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [onScroll, updateVideo]);
+  }, []);
 
   return (
     <section
