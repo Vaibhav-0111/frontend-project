@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useScroll, useSpring, useMotionValueEvent } from 'framer-motion';
 import './HeroReveal.css';
 
-const mustangVideo = '/fd254ffc-503e-438e-86ee-da85ecd269f9.mp4';
+const mustangVideo = '/landingpage_video.mp4';
 
 export default function HeroReveal({ onVideoReady }) {
   const videoRef = useRef(null);
