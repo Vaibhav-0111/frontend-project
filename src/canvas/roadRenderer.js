@@ -1,131 +1,123 @@
 /**
- * roadRenderer.js
- * Draws the dark cinematic road perspective on the canvas.
- * Speed (0-1) controls how fast the dashed road lines move.
+ * roadRenderer.js — Enhanced cinematic road.
+ * - Darker, more dramatic atmosphere
+ * - Speed-based motion streaks on shoulders
+ * - Brake glow effect during deceleration
+ * - Dynamic horizon line
  */
 
 let roadOffset = 0;
 
-/**
- * @param {CanvasRenderingContext2D} ctx
- * @param {number} width - canvas width
- * @param {number} height - canvas height
- * @param {number} speed - normalized speed 0 to 1
- * @param {number} deltaMs - ms since last frame
- */
-export function drawRoad(ctx, width, height, speed, deltaMs) {
-  // Advance the road line offset based on speed
-  const pixelsPerMs = speed * 0.6;
-  roadOffset = (roadOffset + pixelsPerMs * deltaMs) % 80;
+export function drawRoad(ctx, W, H, normalizedSpeed, deltaMs, phase) {
+  // Advance road lines (speed affects distance per ms)
+  let roadSpeed = normalizedSpeed;
+  // During braking, road still moves but decelerates
+  roadOffset = (roadOffset + roadSpeed * 0.6 * deltaMs) % 80;
 
-  // Sky / dark background gradient
-  const skyGrad = ctx.createLinearGradient(0, 0, 0, height * 0.55);
-  skyGrad.addColorStop(0, '#000000');
-  skyGrad.addColorStop(1, '#0a0a0a');
-  ctx.fillStyle = skyGrad;
-  ctx.fillRect(0, 0, width, height * 0.55);
+  const VP = { x: W * 0.5, y: H * 0.50 };
 
-  // Horizon glow — subtle warm red on the horizon
-  const horizonGrad = ctx.createLinearGradient(0, height * 0.45, 0, height * 0.62);
+  // ── Sky ──────────────────────────────────────────────────────
+  const sky = ctx.createLinearGradient(0, 0, 0, VP.y);
+  sky.addColorStop(0, '#000000');
+  sky.addColorStop(1, '#050508');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, VP.y);
+
+  // Atmospheric horizon glow
+  const horizonAlpha = 0.04 + normalizedSpeed * 0.14;
+  const horizonColor = phase === 'decel' ? `rgba(30,60,255,${horizonAlpha})` : `rgba(180,10,10,${horizonAlpha})`;
+  const horizonGrad  = ctx.createLinearGradient(0, VP.y - 60, 0, VP.y + 60);
   horizonGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  horizonGrad.addColorStop(0.4, `rgba(180, 10, 10, ${0.03 + speed * 0.12})`);
+  horizonGrad.addColorStop(0.5, horizonColor);
   horizonGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = horizonGrad;
-  ctx.fillRect(0, 0, width, height * 0.62);
+  ctx.fillRect(0, VP.y - 60, W, 120);
 
-  // ── Road surface ───────────────────────────────────────────────
-  const vp = { x: width * 0.5, y: height * 0.52 }; // vanishing point
-  const roadLeft = 0;
-  const roadRight = width;
-
-  const roadGrad = ctx.createLinearGradient(0, vp.y, 0, height);
-  roadGrad.addColorStop(0, '#111111');
-  roadGrad.addColorStop(1, '#1c1c1c');
+  // ── Road surface ─────────────────────────────────────────────
+  const roadGrad = ctx.createLinearGradient(0, VP.y, 0, H);
+  roadGrad.addColorStop(0, '#0e0e10');
+  roadGrad.addColorStop(1, '#1a1a1e');
   ctx.beginPath();
-  ctx.moveTo(vp.x - 60, vp.y);
-  ctx.lineTo(vp.x + 60, vp.y);
-  ctx.lineTo(roadRight, height);
-  ctx.lineTo(roadLeft, height);
+  ctx.moveTo(VP.x - 55, VP.y);
+  ctx.lineTo(VP.x + 55, VP.y);
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
   ctx.closePath();
   ctx.fillStyle = roadGrad;
   ctx.fill();
 
-  // Road edge lines (subtle)
-  drawRoadEdge(ctx, vp, roadLeft, roadRight, height, speed);
+  // Brake light reflection on road (decel phase only)
+  if (phase === 'decel') {
+    const brakeGrad = ctx.createLinearGradient(0, VP.y, 0, H);
+    const brakeAlpha = 0.05 + (1 - normalizedSpeed) * 0.12;
+    brakeGrad.addColorStop(0, `rgba(60,60,255,0)`);
+    brakeGrad.addColorStop(0.4, `rgba(30,30,200,${brakeAlpha})`);
+    brakeGrad.addColorStop(1, `rgba(0,0,150,${brakeAlpha * 0.5})`);
+    ctx.beginPath();
+    ctx.moveTo(VP.x - 55, VP.y);
+    ctx.lineTo(VP.x + 55, VP.y);
+    ctx.lineTo(W, H);
+    ctx.lineTo(0, H);
+    ctx.closePath();
+    ctx.fillStyle = brakeGrad;
+    ctx.fill();
+  }
 
-  // Center dashed divider
-  drawCenterLine(ctx, vp, width, height, speed, roadOffset);
+  // ── Edge lines ────────────────────────────────────────────────
+  ctx.strokeStyle = `rgba(255,255,255,${0.06 + normalizedSpeed * 0.04})`;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(VP.x - 40, VP.y); ctx.lineTo(30, H); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(VP.x + 40, VP.y); ctx.lineTo(W - 30, H); ctx.stroke();
 
-  // Speed motion streaks on the road shoulders at high speeds
-  if (speed > 0.4) {
-    drawSpeedStreaks(ctx, vp, width, height, speed, roadOffset);
+  // ── Center dashed line (perspective) ─────────────────────────
+  drawCenterLine(ctx, VP, H, normalizedSpeed);
+
+  // ── Shoulder speed streaks ────────────────────────────────────
+  if (normalizedSpeed > 0.3) {
+    drawSpeedStreaks(ctx, VP, W, H, normalizedSpeed);
   }
 }
 
-function drawRoadEdge(ctx, vp, left, right, height, speed) {
-  ctx.strokeStyle = `rgba(255, 255, 255, ${0.06 + speed * 0.04})`;
-  ctx.lineWidth = 1;
-
-  // left edge line
-  ctx.beginPath();
-  ctx.moveTo(vp.x - 40, vp.y);
-  ctx.lineTo(left + 30, height);
-  ctx.stroke();
-
-  // right edge line
-  ctx.beginPath();
-  ctx.moveTo(vp.x + 40, vp.y);
-  ctx.lineTo(right - 30, height);
-  ctx.stroke();
-}
-
-function drawCenterLine(ctx, vp, width, height, speed, offset) {
-  const dashCount = 12;
-  ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 + speed * 0.1})`;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([]);
-
+function drawCenterLine(ctx, VP, H, speed) {
+  const dashCount = 14;
   for (let i = 0; i < dashCount; i++) {
-    // Calculate perspective position for each dash
-    const t0 = (i * 80 + offset) / (height - vp.y);
-    const t1 = ((i + 0.45) * 80 + offset) / (height - vp.y);
-    if (t0 > 1) continue;
+    const t0 = Math.min(((i * 80 + roadOffset) / (H - VP.y)), 1);
+    const t1 = Math.min((((i + 0.45) * 80 + roadOffset) / (H - VP.y)), 1);
+    if (t0 >= 1) continue;
 
-    const y0 = vp.y + t0 * (height - vp.y);
-    const y1 = vp.y + Math.min(t1, 1) * (height - vp.y);
-
-    // Perspective x: closer to center at horizon, spreading at bottom
-    const spread0 = t0 * 6;
-    const spread1 = t1 * 6;
+    const y0 = VP.y + t0 * (H - VP.y);
+    const y1 = VP.y + t1 * (H - VP.y);
+    const hw0 = t0 * 6;
+    const hw1 = t1 * 6;
 
     ctx.globalAlpha = Math.min(t0 * 1.5, 1);
     ctx.beginPath();
-    ctx.moveTo(vp.x - spread0, y0);
-    ctx.lineTo(vp.x + spread0, y0);
-    ctx.lineTo(vp.x + spread1, y1);
-    ctx.lineTo(vp.x - spread1, y1);
+    ctx.moveTo(VP.x - hw0, y0);
+    ctx.lineTo(VP.x + hw0, y0);
+    ctx.lineTo(VP.x + hw1, y1);
+    ctx.lineTo(VP.x - hw1, y1);
     ctx.closePath();
-    ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + speed * 0.1})`;
+    ctx.fillStyle = `rgba(255,255,255,${0.22 + speed * 0.08})`;
     ctx.fill();
   }
   ctx.globalAlpha = 1;
 }
 
-function drawSpeedStreaks(ctx, vp, width, height, speed, offset) {
-  const streakCount = 8;
-  const alpha = (speed - 0.4) * 0.25;
-
+function drawSpeedStreaks(ctx, VP, W, H, speed) {
+  const alpha = (speed - 0.3) * 0.18;
+  const streakCount = 10;
   for (let i = 0; i < streakCount; i++) {
-    const side = i % 2 === 0 ? -1 : 1;
-    const xFactor = 0.15 + (Math.floor(i / 2) * 0.08);
-    
-    const t = ((i * 60 + offset * 2) % (height - vp.y)) / (height - vp.y);
-    const y = vp.y + t * (height - vp.y);
-    const x = vp.x + side * xFactor * width * t;
-    const streakLen = t * 40 * speed;
+    const side     = i % 2 === 0 ? -1 : 1;
+    const xFactor  = 0.1 + (Math.floor(i / 2) * 0.07);
+    const t        = ((i * 55 + roadOffset * 2) % Math.max(H - VP.y, 1)) / Math.max(H - VP.y, 1);
+    const y        = VP.y + t * (H - VP.y);
+    const x        = VP.x + side * xFactor * W * t;
+    const streakLen = t * 50 * speed;
 
     ctx.globalAlpha = alpha * t;
-    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+    ctx.fillStyle   = 'rgba(255,255,255,0.9)';
     ctx.fillRect(x - 0.5, y - streakLen, 1, streakLen);
   }
   ctx.globalAlpha = 1;
