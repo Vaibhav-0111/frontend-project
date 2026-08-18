@@ -1,0 +1,97 @@
+.performance-lab {
+  min-height: 100vh;
+  background-color: var(--clr-black, #000);
+  color: var(--clr-white, #fff);
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-header {
+  padding: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lab-back-link {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.lab-back-link:hover {
+  color: var(--clr-white, #fff);
+}
+
+.lab-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  margin: 0;
+  color: var(--clr-white, #fff);
+}
+
+.lab-grid {
+  display: grid;
+  flex-grow: 1;
+}
+
+/* 
+  Mobile First: Stacked intelligently 
+  1. Selected Mustang / simulator
+  2. Specs
+  3. Mustang catalog
+*/
+@media (max-width: 1023px) {
+  .lab-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas: 
+      "simulator"
+      "specs"
+      "catalog";
+    gap: 2rem;
+    padding: 1rem;
+  }
+
+  .lab-catalog-col { grid-area: catalog; }
+  .lab-simulator-col { grid-area: simulator; min-height: 50vh; }
+  .lab-specs-col { grid-area: specs; }
+}
+
+/* 
+  Desktop: Three-column layout
+  20% catalog | 55% simulator | 25% specs
+*/
+@media (min-width: 1024px) {
+  .lab-grid {
+    grid-template-columns: 20fr 55fr 25fr;
+    grid-template-areas: "catalog simulator specs";
+  }
+
+  .lab-catalog-col {
+    grid-area: catalog;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    height: calc(100vh - 80px); /* viewport minus header */
+    overflow-y: auto;
+  }
+
+  .lab-simulator-col {
+    grid-area: simulator;
+    position: relative;
+    height: calc(100vh - 80px);
+    overflow: hidden;
+  }
+
+  .lab-specs-col {
+    grid-area: specs;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding: 2rem;
+  }
+}
