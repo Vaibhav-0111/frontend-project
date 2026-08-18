@@ -2,98 +2,82 @@ import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import './Loader.css';
 
-const CYCLE_MS = 3000; // must match CSS @keyframes driveCar duration
+const CYCLE_MS   = 3000; // must match CSS driveCar animation duration
+const MAX_VOL    = 0.60;
+const BASE_PITCH = 0.85;
 
-/**
- * Bell-curve volume based on car position in the 3-second cycle.
- * Car enters right-side, peaks ~35-55% through, exits left.
- *   progress 0.00 → 0.20 : ramp up   (car approaching from right)
- *   progress 0.20 → 0.65 : full blast (car passing)
- *   progress 0.65 → 1.00 : ramp down  (car receding left)
- */
-function getCycleVolume(progress) {
-  if (progress < 0.18) return progress / 0.18;           // 0 → 1 rise
-  if (progress < 0.65) return 1.0;                       // full
-  return 1.0 - (progress - 0.65) / 0.35;                // 1 → 0 fall
+function getCycleVolume(p) {
+  // Bell curve: 0 at edges, peak in middle section (35% – 65%)
+  if (p < 0.22) return (p / 0.22);
+  if (p < 0.65) return 1.0;
+  return 1.0 - (p - 0.65) / 0.35;
 }
 
-/**
- * Pitch (playbackRate) rises as car approaches, peaks, then falls back.
- * Range: 0.75 (distant) → 1.15 (passing) → 0.80 (receding)
- */
-function getCyclePitch(progress) {
-  if (progress < 0.18) return 0.75 + (progress / 0.18) * 0.40;
-  if (progress < 0.45) return 1.15;
-  if (progress < 0.65) return 1.15 - ((progress - 0.45) / 0.20) * 0.35;
-  return 0.80;
+function getCyclePitch(p) {
+  if (p < 0.22) return 0.78 + (p / 0.22) * 0.35;
+  if (p < 0.55) return 1.13;
+  return 1.13 - ((p - 0.55) / 0.45) * 0.33;
 }
 
 export default function Loader() {
-  const audioRef    = useRef(null);
-  const rafRef      = useRef(null);
-  const startTsRef  = useRef(null);   // when the current cycle started
-  const exitingRef  = useRef(false);  // true once exit anim begins
+  const audioRef   = useRef(null);
+  const rafRef     = useRef(null);
+  const startRef   = useRef(null);
+  const exitingRef = useRef(false);
 
   useEffect(() => {
-    const audio = new Audio('/mustang_cinematic_v8_roar.mp3');
-    audio.loop          = false;   // we control looping manually for sync
-    audio.volume        = 0;
-    audio.playbackRate  = 0.75;
-    audioRef.current    = audio;
+    const audio       = new Audio('/mustang_cinematic_v8_roar.mp3');
+    audio.loop        = true;   // just loop it; RAF handles volume sync
+    audio.volume      = 0;
+    audio.playbackRate = BASE_PITCH;
+    audioRef.current  = audio;
 
-    let started = false;
+    // RAF loop — runs every frame, adjusts volume & pitch to car position
+    function syncLoop(ts) {
+      if (exitingRef.current) return;
 
-    function startSync() {
-      if (started) return;
-      started = true;
-      startTsRef.current = performance.now();
+      if (startRef.current === null) startRef.current = ts;
+      const elapsed  = ts - startRef.current;
+      const progress = (elapsed % CYCLE_MS) / CYCLE_MS;
 
-      // Play and immediately start the sync loop
-      audio.play().catch(() => {});
-      scheduleLoop();
+      const targetVol   = getCycleVolume(progress) * MAX_VOL;
+      const targetPitch = getCyclePitch(progress);
+
+      // Smooth to target instead of snapping (lerp)
+      audio.volume       = Math.max(0, Math.min(1, audio.volume + (targetVol   - audio.volume)   * 0.08));
+      audio.playbackRate = Math.max(0.5, Math.min(2.5, audio.playbackRate + (targetPitch - audio.playbackRate) * 0.06));
+
+      rafRef.current = requestAnimationFrame(syncLoop);
     }
 
-    function scheduleLoop() {
-      rafRef.current = requestAnimationFrame((ts) => {
-        if (!audioRef.current || exitingRef.current) return;
+    // Try to play immediately
+    const playPromise = audio.play();
 
-        const elapsed  = ts - (startTsRef.current ?? ts);
-        const progress = (elapsed % CYCLE_MS) / CYCLE_MS;
-
-        // Restart audio each cycle to stay in sync with the CSS animation
-        if (elapsed % CYCLE_MS < 50 && elapsed > 50) {
-          audio.currentTime = 0;
-          audio.play().catch(() => {});
-        }
-
-        const vol   = getCycleVolume(progress);
-        const pitch = getCyclePitch(progress);
-
-        audio.volume       = Math.max(0, Math.min(1, vol * 0.55));
-        audio.playbackRate = Math.max(0.5, Math.min(2.5, pitch));
-
-        scheduleLoop();
-      });
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          // Autoplay allowed — start sync loop
+          startRef.current = null;
+          rafRef.current   = requestAnimationFrame(syncLoop);
+        })
+        .catch(() => {
+          // Autoplay blocked by browser — wait for any user gesture
+          const unlock = () => {
+            audio.play()
+              .then(() => {
+                startRef.current = null;
+                rafRef.current   = requestAnimationFrame(syncLoop);
+              })
+              .catch(() => {}); // still blocked — give up silently
+            window.removeEventListener('click',      unlock);
+            window.removeEventListener('touchstart', unlock);
+            window.removeEventListener('keydown',    unlock);
+          };
+          window.addEventListener('click',      unlock, { once: true });
+          window.addEventListener('touchstart', unlock, { once: true });
+          window.addEventListener('keydown',    unlock, { once: true });
+        });
     }
-
-    // Try autoplay immediately; fallback to first interaction
-    audio.play()
-      .then(() => {
-        audio.pause();
-        audio.currentTime = 0;
-        startSync();
-      })
-      .catch(() => {
-        const unlock = () => {
-          startSync();
-          window.removeEventListener('click',      unlock);
-          window.removeEventListener('touchstart', unlock);
-          window.removeEventListener('keydown',    unlock);
-        };
-        window.addEventListener('click',      unlock, { once: true });
-        window.addEventListener('touchstart', unlock, { once: true });
-        window.addEventListener('keydown',    unlock, { once: true });
-      });
 
     return () => {
       cancelAnimationFrame(rafRef.current);
@@ -102,26 +86,26 @@ export default function Loader() {
     };
   }, []);
 
-  // Called the moment Framer Motion starts the exit animation
-  function handleAnimationStart(definition) {
-    if (definition !== 'exit') return;
+  // Called by Framer Motion when exit animation BEGINS
+  function handleAnimationStart(def) {
+    if (def !== 'exit') return;
     exitingRef.current = true;
+    cancelAnimationFrame(rafRef.current);
 
     const audio = audioRef.current;
     if (!audio) return;
-    cancelAnimationFrame(rafRef.current);
 
-    // Fade out over ~400ms (faster than exit anim 0.7s so it goes silent first)
-    const fadeOut = setInterval(() => {
-      if (!audioRef.current) return clearInterval(fadeOut);
-      if (audio.volume > 0.04) {
-        audio.volume = Math.max(0, audio.volume - 0.06);
+    // Hard fade out in ~350ms
+    const step = setInterval(() => {
+      if (!audioRef.current) return clearInterval(step);
+      if (audio.volume > 0.05) {
+        audio.volume = Math.max(0, audio.volume - 0.07);
       } else {
         audio.volume = 0;
         audio.pause();
-        clearInterval(fadeOut);
+        clearInterval(step);
       }
-    }, 30);
+    }, 25);
   }
 
   return (
