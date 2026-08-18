@@ -24,14 +24,25 @@ export default function HeroReveal() {
     restDelta: 0.001 // Precision to stop calculating
   });
 
+  const lastUpdateTime = useRef(0);
+
   // Whenever the smoothed progress changes, update the video
   useMotionValueEvent(smoothProgress, "change", (latest) => {
     const video = videoRef.current;
     if (!video || !isReady) return;
+
+    // Throttle video seeking to ~30 FPS (every 33ms) to prevent video decoder choke
+    const now = performance.now();
+    if (now - lastUpdateTime.current < 33) return;
     
-    const targetTime = latest * video.duration;
-    // Clamp to valid range to prevent throwing an error at the very end
-    video.currentTime = Math.min(targetTime, video.duration - 0.05);
+    // Round to 2 decimal places to help with browser frame caching
+    const targetTime = Math.round((latest * video.duration) * 100) / 100;
+    
+    // Only seek if the difference is meaningful
+    if (Math.abs(video.currentTime - targetTime) > 0.03) {
+      lastUpdateTime.current = now;
+      video.currentTime = Math.min(targetTime, video.duration - 0.05);
+    }
   });
 
   useEffect(() => {
