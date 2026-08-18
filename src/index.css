@@ -1,0 +1,115 @@
+/* ============================================================
+   FORD MUSTANG — GLOBAL DESIGN SYSTEM
+   ============================================================ */
+
+/* Reset & Base */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Color Palette */
+  --clr-black: #000000;
+  --clr-void: #050505;
+  --clr-charcoal-deep: #0a0a0a;
+  --clr-charcoal: #111111;
+  --clr-charcoal-mid: #1a1a1a;
+  --clr-charcoal-light: #222222;
+  --clr-silver-dark: #333333;
+  --clr-silver-mid: #555555;
+  --clr-silver: #888888;
+  --clr-silver-light: #aaaaaa;
+  --clr-white-dim: #cccccc;
+  --clr-white-soft: #e8e8e8;
+  --clr-white: #ffffff;
+  --clr-accent: #c0392b;       /* Mustang Red — restrained */
+  --clr-accent-glow: rgba(192, 57, 43, 0.12);
+  --clr-metallic: #8a8a8a;
+  --clr-metallic-light: #b5b5b5;
+
+  /* Typography */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-heading: 'Rajdhani', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 2rem;
+  --space-lg: 4rem;
+  --space-xl: 8rem;
+
+  /* Transitions */
+  --transition-fast: 0.2s ease;
+  --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-slow: 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+html {
+  scroll-behavior: auto; /* manual scroll for hero, smooth elsewhere */
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--clr-black);
+  color: var(--clr-white);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--clr-black);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--clr-silver-dark);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-silver-mid);
+}
+
+/* Selection */
+::selection {
+  background: var(--clr-accent);
+  color: var(--clr-white);
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--clr-accent);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
