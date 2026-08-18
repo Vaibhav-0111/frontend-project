@@ -9,18 +9,19 @@ const IDLE_STATE = { speed: 0, normalizedSpeed: 0, rpm: 0.1, gear: 1, gForce: 0,
 // ── car DOM-element updater (called every frame, no React) ──────
 function updateCarImg(imgEl, W, H, normalizedSpeed) {
   if (!imgEl) return;
-  // Car sits at ~55% height, shifts left slightly at speed
-  const baseX  = W * 0.42;
-  const baseY  = H * 0.52;
-  const shakeX = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.5 : 0;
-  const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 0.8 : 0;
-  const scale  = 0.78 + normalizedSpeed * 0.04; // very subtle grow at speed
-  const w      = Math.min(W * 0.48, 520);
+  const shakeX = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.8 : 0;
+  const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 0.9 : 0;
+  const scale  = 1 + normalizedSpeed * 0.04;   // very subtle grow
+
+  const w   = Math.min(W * 0.50, 560);
+  const bx  = (W - w) * 0.5 + shakeX;         // centered horizontally
+  const by  = H * 0.30 + shakeY;               // sits in upper-mid (above road horizon)
 
   imgEl.style.width     = `${w}px`;
-  imgEl.style.left      = `${baseX - w * 0.5 + shakeX}px`;
-  imgEl.style.top       = `${baseY - w * 0.22 + shakeY}px`;
-  imgEl.style.transform = `scaleX(-1) scale(${scale})`;     // mirror so car faces left (driving)
+  imgEl.style.left      = `${bx}px`;
+  imgEl.style.top       = `${by}px`;
+  // scaleX(-1) mirrors the car so it faces left (driving direction)
+  imgEl.style.transform = `scaleX(-1) scale(${scale})`;
 }
 
 export default function PerformanceSimulator({ car }) {
@@ -185,13 +186,19 @@ export default function PerformanceSimulator({ car }) {
       {/* Road + gauge canvas */}
       <canvas ref={canvasRef} className="perf-canvas" />
 
-      {/* Car as DOM image — mix-blend-mode:multiply kills the studio BG */}
+      {/* Car as DOM image — mask-image vignette hides studio bg edges */}
       <img
         ref={carImgRef}
         src={car.images.side}
         alt={car.name}
         className="perf-car-img"
         draggable={false}
+        style={{
+          width: '46%',
+          left: '27%',
+          top: '30%',
+          transform: 'scaleX(-1)',
+        }}
       />
 
       {/* Minimal controls overlay */}

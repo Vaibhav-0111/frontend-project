@@ -20,12 +20,29 @@
   position: absolute;
   pointer-events: none;
   user-select: none;
-  /* multiply blends the light studio background away against the dark canvas */
-  mix-blend-mode: multiply;
-  /* Slight contrast boost so the car pops on the dark road */
-  filter: contrast(1.08) brightness(0.92);
   will-change: transform, left, top, width;
   transition: none;
+
+  /*
+   * Radial vignette mask: fades the rectangular studio-photo background
+   * edges to transparent so only the car body is visible.
+   * This works correctly on both dark AND light backgrounds.
+   */
+  -webkit-mask-image: radial-gradient(
+    ellipse 82% 78% at 50% 52%,
+    black 38%,
+    rgba(0,0,0,0.7) 58%,
+    transparent 75%
+  );
+  mask-image: radial-gradient(
+    ellipse 82% 78% at 50% 52%,
+    black 38%,
+    rgba(0,0,0,0.7) 58%,
+    transparent 75%
+  );
+
+  /* Slightly boost contrast so the car body reads well on dark road */
+  filter: contrast(1.12) brightness(0.88) drop-shadow(0 6px 20px rgba(0,0,0,0.9));
 }
 
 /* ── DOM Controls overlay — positioned at the bottom center ─── */
