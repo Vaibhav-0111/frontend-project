@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import './PerformanceSection.css';
 
 const FEATURES = [
@@ -50,8 +51,27 @@ const FEATURES = [
 ];
 
 export default function PerformanceSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section id="performance" className="perf-section" aria-labelledby="perf-heading">
+    <section ref={sectionRef} id="performance" className={`perf-section ${isVisible ? 'is-visible' : ''}`} aria-labelledby="perf-heading">
       <div className="perf-section__inner">
         {/* Header */}
         <div className="perf-section__header">

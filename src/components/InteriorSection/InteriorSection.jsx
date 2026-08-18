@@ -1,71 +1,41 @@
+import { useEffect, useRef, useState } from 'react';
 import './InteriorSection.css';
 
 export default function InteriorSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section id="interior" className="interior-section" aria-labelledby="interior-heading">
-      <div className="interior-section__inner">
+    <section ref={sectionRef} id="interior" className="interior-section" aria-labelledby="interior-heading">
+      <div className={`interior-section__inner ${isVisible ? 'is-visible' : ''}`}>
         {/* ── Visual Side ────────────────────────────────────── */}
         <div className="interior-section__visual" aria-hidden="true">
           <div className="interior-card">
             <div className="interior-card__bg" />
-            {/* Dashboard graphic */}
-            <svg
-              className="interior-card__dash"
-              viewBox="0 0 560 320"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              {/* Dashboard panel */}
-              <rect x="0" y="80" width="560" height="200" rx="8" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
-
-              {/* Steering wheel */}
-              <circle cx="140" cy="240" r="55" stroke="rgba(255,255,255,0.15)" strokeWidth="2" fill="none" />
-              <circle cx="140" cy="240" r="30" stroke="rgba(255,255,255,0.08)" strokeWidth="1.5" fill="none" />
-              <circle cx="140" cy="240" r="6" fill="rgba(255,255,255,0.2)" />
-              {/* spokes */}
-              <line x1="140" y1="185" x2="140" y2="210" stroke="rgba(255,255,255,0.12)" strokeWidth="2" strokeLinecap="round" />
-              <line x1="140" y1="270" x2="140" y2="295" stroke="rgba(255,255,255,0.12)" strokeWidth="2" strokeLinecap="round" />
-              <line x1="85" y1="240" x2="110" y2="240" stroke="rgba(255,255,255,0.12)" strokeWidth="2" strokeLinecap="round" />
-              <line x1="170" y1="240" x2="195" y2="240" stroke="rgba(255,255,255,0.12)" strokeWidth="2" strokeLinecap="round" />
-
-              {/* Digital instrument cluster */}
-              <rect x="210" y="100" width="200" height="100" rx="6"
-                fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-              {/* Tachometer arc */}
-              <path d="M 255 195 A 55 55 0 0 1 365 195"
-                stroke="rgba(255,255,255,0.06)" strokeWidth="8" fill="none" strokeLinecap="round" />
-              <path d="M 255 195 A 55 55 0 0 1 320 142"
-                stroke="rgba(192,57,43,0.5)" strokeWidth="8" fill="none" strokeLinecap="round" />
-              {/* Speed readout */}
-              <text x="310" y="180" textAnchor="middle" fontFamily="monospace" fontSize="22"
-                fill="rgba(255,255,255,0.8)">—</text>
-              <text x="310" y="198" textAnchor="middle" fontFamily="monospace" fontSize="9"
-                fill="rgba(255,255,255,0.25)" letterSpacing="3">ENGINE</text>
-
-              {/* Center infotainment screen */}
-              <rect x="240" y="210" width="160" height="90" rx="4"
-                fill="rgba(0,0,0,0.5)" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-              {/* Screen glow */}
-              <rect x="242" y="212" width="156" height="86" rx="3"
-                fill="rgba(20,40,60,0.3)" />
-              <line x1="280" y1="230" x2="360" y2="230" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
-              <line x1="260" y1="248" x2="380" y2="248" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-              <circle cx="261" cy="270" r="10" stroke="rgba(255,255,255,0.1)" strokeWidth="1" fill="none" />
-              <circle cx="285" cy="270" r="10" stroke="rgba(255,255,255,0.1)" strokeWidth="1" fill="none" />
-
-              {/* Gear selector */}
-              <rect x="430" y="220" width="24" height="60" rx="12"
-                fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-              <circle cx="442" cy="235" r="6" fill="rgba(255,255,255,0.15)" />
-              <text x="442" y="262" textAnchor="middle" fontFamily="monospace" fontSize="7"
-                fill="rgba(255,255,255,0.2)">D</text>
-
-              {/* Accent line at bottom */}
-              <line x1="0" y1="279" x2="560" y2="279"
-                stroke="rgba(192,57,43,0.25)" strokeWidth="0.75" />
-            </svg>
-
+            <img 
+              src="/interior.jpg" 
+              alt="Mustang Interior" 
+              className="interior-card__image" 
+            />
+            
             <div className="interior-card__label">
               <span>Interior</span>
               <span>Driver-First Design</span>

@@ -1,12 +1,32 @@
+import { useEffect, useRef, useState } from 'react';
 import './DesignSection.css';
 
 export default function DesignSection() {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section id="design" className="design-section" aria-labelledby="design-heading">
+    <section ref={sectionRef} id="design" className="design-section" aria-labelledby="design-heading">
       {/* Section label */}
       <div className="design-section__label" aria-hidden="true">01 — Design</div>
 
-      <div className="design-section__inner">
+      <div className={`design-section__inner ${isVisible ? 'is-visible' : ''}`}>
         {/* Text column */}
         <div className="design-section__text">
           <h2 id="design-heading" className="design-section__headline">

@@ -5,7 +5,7 @@
 /* Tall scroll container — creates the scrollable real estate */
 .hero-scroll {
   position: relative;
-  height: 500vh; /* 5× viewport height = deep scroll room */
+  height: 250vh; /* Shorter scroll height so it's not too sticky */
   background: var(--clr-black);
 }
 
@@ -232,7 +232,7 @@
 
 @media (max-width: 480px) {
   .hero-scroll {
-    height: 500vh;
+    height: 250vh;
   }
 
   .hero-video {

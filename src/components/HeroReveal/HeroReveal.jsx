@@ -27,13 +27,13 @@ export default function HeroReveal() {
     const raw = -top;                      // px scrolled into section
     const progress = Math.min(1, Math.max(0, raw / scrollable));
 
-    // Avoid redundant seeks — only update when changed meaningfully
-    if (Math.abs(progress - lastProgressRef.current) < 0.0005) return;
+    // Increase threshold to prevent lag (fewer updates)
+    if (Math.abs(progress - lastProgressRef.current) < 0.002) return;
     lastProgressRef.current = progress;
 
     const targetTime = progress * video.duration;
     // Clamp to valid range
-    video.currentTime = Math.min(targetTime, video.duration - 0.001);
+    video.currentTime = Math.min(targetTime, video.duration - 0.05); // slight padding
   }, []);
 
   const onScroll = useCallback(() => {
