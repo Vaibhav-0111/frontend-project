@@ -26,7 +26,7 @@ export default function Loader() {
   const exitingRef = useRef(false);
 
   useEffect(() => {
-    const audio       = new Audio('/mustang_cinematic_v8_roar.mp3');
+    const audio       = new Audio('/intro.mp3');
     audio.loop        = true;   // just loop it; RAF handles volume sync
     audio.volume      = 0;
     audio.playbackRate = BASE_PITCH;

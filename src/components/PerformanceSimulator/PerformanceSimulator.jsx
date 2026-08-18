@@ -24,9 +24,9 @@ function updateCarImg(imgEl, W, H, normalizedSpeed) {
   imgEl.style.transform = `scaleX(-1) scale(${scale})`;
 }
 
-export default function PerformanceSimulator({ car }) {
+export default function PerformanceSimulator({ car, activeView = 'hero', isMuted: externalMuted, externalMute = false }) {
   const canvasRef     = useRef(null);
-  const carImgRef     = useRef(null);        // ← DOM ref, not canvas
+  const carImgRef     = useRef(null);
   const simulationRef = useRef(null);
   const simStateRef   = useRef(IDLE_STATE);
   const animFrameRef  = useRef(null);
@@ -36,9 +36,15 @@ export default function PerformanceSimulator({ car }) {
   const idleAudioRef  = useRef(null);
   const accelAudioRef = useRef(null);
 
-  const [status,    setStatus]    = useState('idle');
-  const [isMuted,   setIsMuted]   = useState(false);
-  const [runResult, setRunResult] = useState(null);
+  const [status,       setStatus]    = useState('idle');
+  const [internalMute, setInternalMute] = useState(false);
+  const [runResult,    setRunResult] = useState(null);
+
+  // Honour external mute from parent OR internal button
+  const isMuted = externalMute ? !!externalMuted : internalMute;
+
+  // Active car image URL — changes with angle tab
+  const carImgSrc = car.images[activeView] || car.images.hero || car.images.side;
 
   // ── Master draw loop ─────────────────────────────────────────
   const drawLoop = useCallback((timestamp) => {
@@ -186,18 +192,18 @@ export default function PerformanceSimulator({ car }) {
       {/* Road + gauge canvas */}
       <canvas ref={canvasRef} className="perf-canvas" />
 
-      {/* Car as DOM image — mask-image vignette hides studio bg edges */}
+      {/* Car image — angle changes with view tab */}
       <img
         ref={carImgRef}
-        src={car.images.side}
-        alt={car.name}
+        src={carImgSrc}
+        alt={`${car.name} ${activeView} view`}
         className="perf-car-img"
         draggable={false}
         style={{
           width: '46%',
           left: '27%',
-          top: '30%',
-          transform: 'scaleX(-1)',
+          top: '28%',
+          transform: activeView === 'side' ? 'scaleX(-1)' : 'none',
         }}
       />
 
@@ -223,14 +229,17 @@ export default function PerformanceSimulator({ car }) {
             {status === 'running' ? '■ RUNNING' : '▶ ACCELERATE'}
           </button>
         )}
-        <button
-          className="perf-btn perf-btn--ghost"
-          onClick={() => setIsMuted(m => !m)}
-          aria-label={isMuted ? 'Enable sound' : 'Mute sound'}
-          id="mute-btn"
-        >
-          {isMuted ? '🔇' : '🔊'}
-        </button>
+        {/* Only show mute button when NOT controlled externally */}
+        {!externalMute && (
+          <button
+            className="perf-btn perf-btn--ghost"
+            onClick={() => setInternalMute(m => !m)}
+            aria-label={isMuted ? 'Enable sound' : 'Mute sound'}
+            id="mute-btn"
+          >
+            {isMuted ? '🔇' : '🔊'}
+          </button>
+        )}
       </div>
     </div>
   );

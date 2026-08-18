@@ -1,97 +1,464 @@
-.performance-lab {
-  min-height: 100vh;
-  background-color: var(--clr-black, #000);
-  color: var(--clr-white, #fff);
+/* ── Root layout ─────────────────────────────────────────────── */
+.pl-root {
+  display: grid;
+  grid-template-columns: 220px 1fr 280px;
+  grid-template-rows: 100vh;
+  background: #000;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LEFT PANEL — car selector
+   ════════════════════════════════════════════════════════════ */
+.pl-left {
   display: flex;
   flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+  overflow: hidden;
 }
 
-.lab-header {
-  padding: 2rem;
+.pl-left__header {
+  padding: 1.4rem 1.2rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.pl-back {
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  transition: color 0.2s;
+}
+.pl-back:hover { color: rgba(255,255,255,0.7); }
+
+.pl-left__title {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+}
+
+/* Car list */
+.pl-car-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.pl-car-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+}
+
+.pl-car-item:hover {
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+}
+
+.pl-car-item--active {
+  border-color: #e3000f !important;
+  background: rgba(227,0,15,0.06) !important;
+}
+
+.pl-car-item__badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  color: #e3000f;
+  font-size: 0.75rem;
+}
+
+.pl-car-item__img {
+  width: 56px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.04);
+}
+
+.pl-car-item__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pl-car-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+}
+
+.pl-car-item__year {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: #e3000f;
+}
+
+.pl-car-item__name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.92rem;
+  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pl-car-item__trim {
+  font-size: 0.6rem;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+}
+
+/* Sound bar */
+.pl-sound-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+}
+
+.pl-sound-bar__icon { font-size: 1rem; }
+
+.pl-sound-bar__label {
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  flex: 1;
+}
+
+.pl-sound-toggle {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  background: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pl-sound-toggle--on {
+  border-color: #e3000f;
+  color: #e3000f;
+}
+
+.pl-sound-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 16px;
+}
+
+.pl-sound-wave span {
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: #e3000f;
+  animation: soundWave 0.6s ease-in-out infinite alternate;
+}
+
+.pl-sound-wave span:nth-child(1) { height: 4px; }
+.pl-sound-wave span:nth-child(2) { height: 10px; animation-delay: 0.1s; }
+.pl-sound-wave span:nth-child(3) { height: 14px; animation-delay: 0.2s; }
+.pl-sound-wave span:nth-child(4) { height: 10px; animation-delay: 0.3s; }
+.pl-sound-wave span:nth-child(5) { height: 4px; animation-delay: 0.4s; }
+
+@keyframes soundWave {
+  from { transform: scaleY(0.4); }
+  to   { transform: scaleY(1.0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CENTER PANEL — simulator
+   ════════════════════════════════════════════════════════════ */
+.pl-center {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+
+/* Top header — car name + tagline */
+.pl-center__head {
+  padding: 1.4rem 2rem 0.8rem;
+  position: relative;
+  z-index: 2;
+}
+
+.pl-center__year {
+  display: block;
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  color: #e3000f;
+  margin-bottom: 0.3rem;
+}
+
+.pl-center__tagline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  letter-spacing: 2px;
+  line-height: 1.1;
+  margin: 0;
+  color: #fff;
+}
+
+.pl-center__accent {
+  margin-top: 0.6rem;
+  width: 50px;
+  height: 2px;
+  background: linear-gradient(90deg, #e3000f, transparent);
+  border-radius: 1px;
+}
+
+/* View-angle tabs */
+.pl-view-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  z-index: 2;
+}
+
+.pl-view-tab {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.65rem;
+  letter-spacing: 2.5px;
+  padding: 0.5rem 0.9rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: rgba(255,255,255,0.3);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  text-transform: uppercase;
+}
+
+.pl-view-tab:hover { color: rgba(255,255,255,0.6); }
+
+.pl-view-tab--active {
+  color: #fff;
+  border-bottom-color: #e3000f;
+}
+
+/* Simulator area */
+.pl-simulator-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RIGHT PANEL — spec panel
+   ════════════════════════════════════════════════════════════ */
+.pl-right {
+  border-left: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+  overflow-y: auto;
+  padding: 1.6rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.08) transparent;
+}
+
+/* Header */
+.pl-spec-year {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 3px;
+  color: #e3000f;
+  margin-bottom: 0.3rem;
+}
+
+.pl-spec-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+  letter-spacing: 2px;
+  line-height: 1.05;
+  margin: 0 0 0.2rem;
+}
+
+.pl-spec-trim {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.35);
+}
+
+.pl-spec-divider {
+  height: 1px;
+  background: linear-gradient(90deg, #e3000f 0%, rgba(255,255,255,0.06) 100%);
+  margin: 1rem 0;
+}
+
+/* Sections */
+.pl-spec-section {
+  margin-bottom: 1.4rem;
+}
+
+.pl-spec-section-label {
+  font-size: 0.58rem;
+  letter-spacing: 3px;
+  color: #e3000f;
+  margin: 0 0 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pl-spec-demo-tag {
+  font-size: 0.52rem;
+  letter-spacing: 2px;
+  color: rgba(255,180,0,0.8);
+  border: 1px solid rgba(255,180,0,0.4);
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+}
+
+/* Spec row */
+.sp-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.sp-row:last-child { border-bottom: none; }
+
+.sp-row-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: rgba(255,255,255,0.3);
+}
+
+.sp-row-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.sp-row-body {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  align-items: baseline;
+  flex: 1;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.lab-back-link {
-  color: rgba(255, 255, 255, 0.6);
-  text-decoration: none;
-  font-family: 'Rajdhani', sans-serif;
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 1px;
-  transition: color 0.3s ease;
-}
-
-.lab-back-link:hover {
-  color: var(--clr-white, #fff);
-}
-
-.lab-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2rem;
+.sp-row-label {
+  font-size: 0.62rem;
   letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.sp-row-value {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  color: #fff;
+  text-align: right;
+}
+
+.sp-row-value--null {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 200, 0, 0.6);
+  letter-spacing: 1px;
+}
+
+/* Disclaimer */
+.pl-disclaimer {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: rgba(255,200,0,0.05);
+  border: 1px solid rgba(255,200,0,0.15);
+  border-radius: 4px;
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.pl-disclaimer-icon { font-size: 0.9rem; flex-shrink: 0; }
+
+.pl-disclaimer p {
   margin: 0;
-  color: var(--clr-white, #fff);
+  font-size: 0.68rem;
+  color: rgba(255,200,0,0.7);
+  line-height: 1.5;
+  letter-spacing: 0.5px;
 }
 
-.lab-grid {
-  display: grid;
-  flex-grow: 1;
+.pl-source {
+  margin: 0;
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+  padding-top: 0.5rem;
 }
 
-/* 
-  Mobile First: Stacked intelligently 
-  1. Selected Mustang / simulator
-  2. Specs
-  3. Mustang catalog
-*/
-@media (max-width: 1023px) {
-  .lab-grid {
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .pl-root {
+    grid-template-columns: 180px 1fr 240px;
+  }
+}
+
+@media (max-width: 820px) {
+  .pl-root {
     grid-template-columns: 1fr;
-    grid-template-areas: 
-      "simulator"
-      "specs"
-      "catalog";
-    gap: 2rem;
-    padding: 1rem;
+    grid-template-rows: auto 1fr auto;
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
   }
 
-  .lab-catalog-col { grid-area: catalog; }
-  .lab-simulator-col { grid-area: simulator; min-height: 50vh; }
-  .lab-specs-col { grid-area: specs; }
+  .pl-left, .pl-right {
+    height: auto;
+  }
+
+  .pl-simulator-wrap {
+    min-height: 60vh;
+  }
 }
 
-/* 
-  Desktop: Three-column layout
-  20% catalog | 55% simulator | 25% specs
-*/
-@media (min-width: 1024px) {
-  .lab-grid {
-    grid-template-columns: 20fr 55fr 25fr;
-    grid-template-areas: "catalog simulator specs";
-  }
-
-  .lab-catalog-col {
-    grid-area: catalog;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-    height: calc(100vh - 80px); /* viewport minus header */
-    overflow-y: auto;
-  }
-
-  .lab-simulator-col {
-    grid-area: simulator;
-    position: relative;
-    height: calc(100vh - 80px);
-    overflow: hidden;
-  }
-
-  .lab-specs-col {
-    grid-area: specs;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    height: calc(100vh - 80px);
-    overflow-y: auto;
-    padding: 2rem;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .pl-sound-wave span { animation: none; }
 }
