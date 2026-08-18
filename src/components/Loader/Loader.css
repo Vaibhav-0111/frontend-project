@@ -1,0 +1,36 @@
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999; /* Stay on top of absolutely everything */
+  background: var(--clr-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.loader-track {
+  width: 100%;
+  position: relative;
+  height: 200px;
+  display: flex;
+  align-items: center;
+}
+
+.loader-car {
+  position: absolute;
+  width: clamp(200px, 30vw, 400px); /* Adjust size responsibly */
+  /* Start off-screen right, move to off-screen left */
+  right: -500px;
+  animation: driveCar 3s linear infinite;
+}
+
+@keyframes driveCar {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    /* Drive entirely across the screen to the left */
+    transform: translateX(calc(-100vw - 1000px)); 
+  }
+}

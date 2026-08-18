@@ -4,7 +4,7 @@ import './HeroReveal.css';
 
 const mustangVideo = '/fd254ffc-503e-438e-86ee-da85ecd269f9.mp4';
 
-export default function HeroReveal() {
+export default function HeroReveal({ onVideoReady }) {
   const videoRef = useRef(null);
   const sectionRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
@@ -56,6 +56,10 @@ export default function HeroReveal() {
       setIsReady(true);
       // Set initial frame instantly without waiting for scroll
       video.currentTime = 0;
+      if (onVideoReady) {
+        // slight delay to ensure the browser has rendered the video frame
+        setTimeout(onVideoReady, 500);
+      }
     };
 
     video.addEventListener('loadedmetadata', onReady);
