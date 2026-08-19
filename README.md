@@ -4,7 +4,7 @@ A cinematic, Product Hunt-style landing page concept for the **Ford Mustang**, b
 
 The centerpiece is a **scroll-driven video reveal** — the Mustang starts hidden under a dark cloth, and the user physically uncovers it by scrolling.
 
-![Ford Mustang Landing Page](.public\mustang\dark-horse-sc\hero.png)
+![Ford Mustang Landing Page](public\mustang\dark-horse-sc\hero.png)
 
 ---
 
