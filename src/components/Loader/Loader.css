@@ -73,17 +73,20 @@
   align-items: flex-end;
 }
 
+/* The car's transform is driven per-frame from the audio clock in Loader.jsx,
+   so its speed is locked to loader_music.mp3 rather than a hardcoded duration.
+   `left: 100%` parks it just past the right edge at cycle position 0. */
 .loader-car {
   position: absolute;
+  bottom: 0;
+  left: 100%;
   width: clamp(180px, 26vw, 380px);
-  right: -500px;
+  height: auto;
+  will-change: transform;
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.8));
-  animation: driveCar 3s linear infinite;
-}
-
-@keyframes driveCar {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(calc(-100vw - 900px)); }
+  transform: translate3d(0, 0, 0);
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 /* LOADING label */
@@ -118,3 +121,17 @@
   40%           { opacity: 1; }
 }
 
+
+/* Reduced motion: park the car mid-screen instead of driving it, and stop
+   the scrolling road. The global reduce rule kills the CSS keyframes, but the
+   car is JS-driven so it needs its own opt-out. */
+@media (prefers-reduced-motion: reduce) {
+  .loader-car {
+    left: 50%;
+    transform: translate3d(-50%, 0, 0) !important;
+  }
+
+  .loader-dashes {
+    display: none;
+  }
+}

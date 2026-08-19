@@ -8,7 +8,10 @@ const mustangVideo = '/landingpage_video.mp4';
 export default function HeroReveal({ onVideoReady }) {
   const videoRef = useRef(null);
   const sectionRef = useRef(null);
+  const onVideoReadyRef = useRef(onVideoReady);
   const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => { onVideoReadyRef.current = onVideoReady; }, [onVideoReady]);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -47,12 +50,15 @@ export default function HeroReveal({ onVideoReady }) {
 
     video.load();
 
+    // `loadedmetadata` can fire before the listener is attached, so we also
+    // check readyState — this guard keeps onReady strictly single-shot.
+    let done = false;
     const onReady = () => {
+      if (done) return;
+      done = true;
       setIsReady(true);
       video.currentTime = 0;
-      if (onVideoReady) {
-        setTimeout(onVideoReady, 1500);
-      }
+      onVideoReadyRef.current?.();
     };
 
     video.addEventListener('loadedmetadata', onReady);
