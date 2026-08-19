@@ -27,28 +27,39 @@
   transition: transform 0.3s ease;
   z-index: 2;
 
-  /* Crisp rendering */
-  image-rendering: -webkit-optimize-contrast;
+  /*
+   * Sources are 1500px wide and render at max 750px, so the browser is
+   * always downsampling — ask for smooth high-quality filtering, never the
+   * edge-hardening `optimize-contrast` hint (that one is for upscaling).
+   */
+  image-rendering: auto;
   image-rendering: high-quality;
 
   /*
-   * Aggressive vignette mask: removes hard rectangular studio-photo edges
-   * Tighter ellipse = more of the background fades to transparent
+   * Vignette mask: removes the hard rectangular studio-photo edges so the
+   * car sits in the scene. Holds full opacity further out than before —
+   * the sharper sources have detail worth keeping out to the fenders.
    */
   -webkit-mask-image: radial-gradient(
-    ellipse 72% 62% at 50% 50%,
-    black 30%,
-    rgba(0,0,0,0.5) 58%,
-    transparent 80%
+    ellipse 76% 66% at 50% 48%,
+    black 44%,
+    rgba(0,0,0,0.55) 64%,
+    transparent 82%
   );
   mask-image: radial-gradient(
-    ellipse 72% 62% at 50% 50%,
-    black 30%,
-    rgba(0,0,0,0.5) 58%,
-    transparent 80%
+    ellipse 76% 66% at 50% 48%,
+    black 44%,
+    rgba(0,0,0,0.55) 64%,
+    transparent 82%
   );
 
-  filter: contrast(1.08) brightness(0.88) drop-shadow(0 15px 40px rgba(0,0,0,0.98));
+  /*
+   * Contrast/saturation are already baked into the assets, so the filter
+   * only does scene integration: a slight knock-down to sit in the dark
+   * road plate, plus a grounding shadow.
+   */
+  filter: saturate(1.06) contrast(1.03) brightness(0.94)
+          drop-shadow(0 18px 44px rgba(0, 0, 0, 0.95));
 }
 
 /* Layer 3: Gauge Foreground */

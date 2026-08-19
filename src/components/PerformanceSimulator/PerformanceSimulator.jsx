@@ -13,7 +13,7 @@ function updateCarImg(imgEl, W, H, normalizedSpeed, activeView) {
   const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.5 : 0;
   const scale  = 1 + normalizedSpeed * 0.05;   // slightly more pronounced grow
 
-  // Reduce max width to prevent blurry upscaling on low-res images
+  // Cap at 750 so the 1500px sources render at an exact 2x — crisp on HiDPI
   const w   = Math.min(W * 0.70, 750);
   const bx  = (W - w) * 0.5 + shakeX;         // centered horizontally
   // Shift the image higher up the screen
