@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { mustangs } from '../data/mustangData';
 import PerformanceSimulator from '../components/PerformanceSimulator/PerformanceSimulator';
 import './PerformanceLab.css';
@@ -40,7 +41,13 @@ export default function PerformanceLab() {
   const isDemo = !selectedCar.performanceSource;
 
   return (
-    <div className="pl-root">
+    <motion.div 
+      className="pl-root"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+    >
 
       {/* ─── LEFT — Car Selector ──────────────────────────────── */}
       <aside className="pl-left">
@@ -165,6 +172,6 @@ export default function PerformanceLab() {
           <p className="pl-source">Specs source: {selectedCar.officialSpecsSource}</p>
         )}
       </aside>
-    </div>
+    </motion.div>
   );
 }

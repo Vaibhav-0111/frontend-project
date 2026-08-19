@@ -39,18 +39,20 @@
   background: #000;
 }
 
-/* ── Vignette overlay ──────────────────────────────────────── */
+/* ── Vignette overlay ─────────────────────────────────────────── */
 .hero-vignette {
   position: absolute;
   inset: 0;
   z-index: 2;
   background:
-    radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%),
-    linear-gradient(to bottom,
-      rgba(0,0,0,0.5) 0%,
-      transparent 20%,
-      transparent 70%,
-      rgba(0,0,0,0.7) 100%);
+    /* Strong top mask — hides bleed-through text from video source */
+    linear-gradient(to bottom, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.6) 10%, transparent 25%),
+    /* Strong right mask — hides DRAG TO REVEAL UI from original video */
+    linear-gradient(to left, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.5) 15%, transparent 35%),
+    /* Bottom fade */
+    linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 25%),
+    /* Radial center vignette */
+    radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
   pointer-events: none;
 }
 
@@ -181,11 +183,24 @@
 
 .hero-cta--secondary {
   background: transparent;
-  color: var(--clr-white, #fff);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.75);
+  border: none;
+  padding: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(255,255,255,0.3);
+}
+.hero-cta--secondary::before {
+  display: none;
 }
 .hero-cta--secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-decoration-color: rgba(255,255,255,0.8);
+  transform: none;
+  box-shadow: none;
+  background: transparent;
 }
 
 /* ── Scroll hint ─────────────────────────────────────────────── */

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from '../components/Navbar/Navbar';
 import HeroReveal from '../components/HeroReveal/HeroReveal';
 import DesignSection from '../components/DesignSection/DesignSection';
@@ -20,7 +20,12 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main>
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: 'easeInOut' }}
+    >
       <AnimatePresence>
         {isLoading && <Loader key="loader" />}
       </AnimatePresence>
@@ -31,6 +36,6 @@ export default function HomePage() {
       <PerformanceSection />
       <InteriorSection />
       <Footer />
-    </main>
+    </motion.main>
   );
 }

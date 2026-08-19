@@ -35,11 +35,10 @@ function speedToAngle(speed) {
 export function drawGauge(ctx, W, H, state) {
   const { speed = 0, rpm = 0, gear = 1, gForce = 0, phase = 'idle' } = state;
 
-  // ── Position the gauge cluster in the lower-left area ────────
-  // Speedometer — center and big
+  // ── Position the gauge cluster in the lower area ────────
   const spdR  = Math.min(W * 0.18, H * 0.30, 130);  // radius
   const spdCX = W * 0.5;
-  const spdCY = H * 0.72;
+  const spdCY = H * 0.78;  // pushed lower so gauges don't overlap car
 
   // Tachometer — smaller, to the left
   const tachR  = spdR * 0.62;
@@ -239,16 +238,26 @@ function drawTachometer(ctx, cx, cy, r, rpm, phase) {
   ctx.fillText('RPM', cx, cy + r * 0.45);
 }
 
-/* ─── GEAR INDICATOR ─────────────────────────────────────────── */
+/* ─── GEAR INDICATOR ─────────────────────────────────────── */
 function drawGearIndicator(ctx, cx, cy, r, gear, phase) {
   const size = r * 1.1;
 
-  // Background plate
+  // Background plate with rounded corners
   ctx.beginPath();
-  ctx.roundRect(cx - size * 0.5, cy - size * 0.6, size, size * 1.2, size * 0.1);
-  ctx.fillStyle = 'rgba(8,8,12,0.95)';
+  ctx.roundRect(cx - size * 0.5, cy - size * 0.6, size, size * 1.2, size * 0.15);
+  ctx.fillStyle = 'rgba(6,6,10,0.97)';
   ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+
+  // Inner glow border — red tint when high gear
+  const borderAlpha = gear >= 5 ? 0.5 : 0.1;
+  ctx.strokeStyle = `rgba(227, 0, 15, ${borderAlpha})`;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Outer subtle rim
+  ctx.beginPath();
+  ctx.roundRect(cx - size * 0.5 - 1, cy - size * 0.6 - 1, size + 2, size * 1.2 + 2, size * 0.16);
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.lineWidth = 1;
   ctx.stroke();
 
@@ -259,12 +268,12 @@ function drawGearIndicator(ctx, cx, cy, r, gear, phase) {
   ctx.fillStyle = 'rgba(255,255,255,0.3)';
   ctx.fillText('GEAR', cx, cy - size * 0.5);
 
-  // Gear number
-  ctx.font = `bold ${size * 0.72}px "Bebas Neue", sans-serif`;
+  // Gear number — larger
+  ctx.font = `bold ${size * 0.82}px "Bebas Neue", sans-serif`;
   ctx.textBaseline = 'middle';
   ctx.fillStyle = phase === 'complete' ? 'rgba(255,255,255,0.2)' : '#fff';
-  ctx.shadowColor = 'rgba(227,0,15,0.4)';
-  ctx.shadowBlur = gear >= 5 ? 10 : 0;
+  ctx.shadowColor = 'rgba(227,0,15,0.6)';
+  ctx.shadowBlur = gear >= 5 ? 18 : 4;
   ctx.fillText(phase === 'complete' ? 'N' : gear.toString(), cx, cy + size * 0.05);
   ctx.shadowBlur = 0;
 }

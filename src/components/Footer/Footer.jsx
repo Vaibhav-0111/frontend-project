@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './Footer.css';
 
 export default function Footer() {
@@ -11,41 +12,34 @@ export default function Footer() {
           <div className="footer__brand">
             <p className="footer__brand-name">MUSTANG</p>
             <p className="footer__brand-tagline">Born to be remembered.</p>
+            <Link to="/performance" className="footer__cta">
+              EXPERIENCE PERFORMANCE →
+            </Link>
           </div>
 
           <nav className="footer__nav" aria-label="Footer navigation">
-            <ul role="list">
-              <li>
-                <button
-                  className="footer__link"
-                  onClick={() =>
-                    document.getElementById('design')?.scrollIntoView({ behavior: 'smooth' })
-                  }
-                >
-                  Design
-                </button>
-              </li>
-              <li>
-                <button
-                  className="footer__link"
-                  onClick={() =>
-                    document.getElementById('performance')?.scrollIntoView({ behavior: 'smooth' })
-                  }
-                >
-                  Performance
-                </button>
-              </li>
-              <li>
-                <button
-                  className="footer__link"
-                  onClick={() =>
-                    document.getElementById('interior')?.scrollIntoView({ behavior: 'smooth' })
-                  }
-                >
-                  Interior
-                </button>
-              </li>
-            </ul>
+            <div className="footer__nav-group">
+              <p className="footer__nav-label">Explore</p>
+              <ul role="list">
+                <li>
+                  <button className="footer__link" onClick={() => document.getElementById('design')?.scrollIntoView({ behavior: 'smooth' })}>Design</button>
+                </li>
+                <li>
+                  <button className="footer__link" onClick={() => document.getElementById('performance')?.scrollIntoView({ behavior: 'smooth' })}>Performance</button>
+                </li>
+                <li>
+                  <button className="footer__link" onClick={() => document.getElementById('interior')?.scrollIntoView({ behavior: 'smooth' })}>Interior</button>
+                </li>
+              </ul>
+            </div>
+            <div className="footer__nav-group">
+              <p className="footer__nav-label">Connect</p>
+              <ul role="list">
+                <li><a className="footer__link" href="https://www.ford.com/cars/mustang/" target="_blank" rel="noopener noreferrer">Ford.com</a></li>
+                <li><a className="footer__link" href="https://twitter.com/ford" target="_blank" rel="noopener noreferrer">Twitter / X</a></li>
+                <li><a className="footer__link" href="https://www.instagram.com/ford/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+              </ul>
+            </div>
           </nav>
         </div>
 
