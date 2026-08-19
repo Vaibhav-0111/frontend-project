@@ -3,8 +3,7 @@ import { motion } from 'framer-motion';
 import './Loader.css';
 
 const CYCLE_MS   = 3000; // must match CSS driveCar animation duration
-const MAX_VOL    = 0.60;
-const BASE_PITCH = 0.85;
+const MAX_VOL    = 0.75; // slightly louder for music
 
 function getCycleVolume(p) {
   // Bell curve: 0 at edges, peak in middle section (35% – 65%)
@@ -26,49 +25,32 @@ export default function Loader() {
   const exitingRef = useRef(false);
 
   useEffect(() => {
-    const audio       = new Audio('/intro.mp3');
-    audio.loop        = true;   // just loop it; RAF handles volume sync
-    audio.volume      = 0;
-    audio.playbackRate = BASE_PITCH;
-    audioRef.current  = audio;
+    const audio      = new Audio('/loader_music.mp3');
+    audio.loop       = true;
+    audio.volume     = 0;       // start silent, fade in
+    audioRef.current = audio;
 
-    // RAF loop — runs every frame, adjusts volume & pitch to car position
-    function syncLoop(ts) {
+    // Simple RAF loop: fade volume up quickly to MAX_VOL
+    function syncLoop() {
       if (exitingRef.current) return;
-
-      if (startRef.current === null) startRef.current = ts;
-      const elapsed  = ts - startRef.current;
-      const progress = (elapsed % CYCLE_MS) / CYCLE_MS;
-
-      const targetVol   = getCycleVolume(progress) * MAX_VOL;
-      const targetPitch = getCyclePitch(progress);
-
-      // Smooth to target instead of snapping (lerp)
-      audio.volume       = Math.max(0, Math.min(1, audio.volume + (targetVol   - audio.volume)   * 0.08));
-      audio.playbackRate = Math.max(0.5, Math.min(2.5, audio.playbackRate + (targetPitch - audio.playbackRate) * 0.06));
-
+      if (audio.volume < MAX_VOL) {
+        audio.volume = Math.min(MAX_VOL, audio.volume + 0.02);
+      }
       rafRef.current = requestAnimationFrame(syncLoop);
     }
 
-    // Try to play immediately
     const playPromise = audio.play();
 
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
-          // Autoplay allowed — start sync loop
-          startRef.current = null;
-          rafRef.current   = requestAnimationFrame(syncLoop);
+          rafRef.current = requestAnimationFrame(syncLoop);
         })
         .catch(() => {
-          // Autoplay blocked by browser — wait for any user gesture
           const unlock = () => {
             audio.play()
-              .then(() => {
-                startRef.current = null;
-                rafRef.current   = requestAnimationFrame(syncLoop);
-              })
-              .catch(() => {}); // still blocked — give up silently
+              .then(() => { rafRef.current = requestAnimationFrame(syncLoop); })
+              .catch(() => {});
             window.removeEventListener('click',      unlock);
             window.removeEventListener('touchstart', unlock);
             window.removeEventListener('keydown',    unlock);
