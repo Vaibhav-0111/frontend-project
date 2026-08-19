@@ -59,7 +59,7 @@ export default function DesignSection() {
         <div className="design-section__visual">
           <div className="design-photo-wrap">
             <img
-              src="/custom_mustang.png"
+              src="/custom_mustang.webp"
               alt="2026 Ford Mustang — sculpted design"
               className="design-photo"
             />

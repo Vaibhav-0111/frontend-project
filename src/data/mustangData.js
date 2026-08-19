@@ -6,10 +6,10 @@ export const mustangs = [
     trim: "Fastback",
 
     images: {
-      hero: "/mustang/ecoboost/hero.png",
-      front: "/mustang/ecoboost/front.png",
-      side: "/mustang/ecoboost/side.png",
-      interior: "/mustang/ecoboost/interior.png"
+      hero: "/mustang/ecoboost/hero.webp",
+      front: "/mustang/ecoboost/front.webp",
+      side: "/mustang/ecoboost/side.webp",
+      interior: "/mustang/ecoboost/interior.webp"
     },
 
     sound: {
@@ -43,10 +43,10 @@ export const mustangs = [
     trim: "Fastback",
 
     images: {
-      hero: "/mustang/gt/hero.png",
-      front: "/mustang/gt/front.png",
-      side: "/mustang/gt/side.png",
-      interior: "/mustang/gt/interior.png"
+      hero: "/mustang/gt/hero.webp",
+      front: "/mustang/gt/front.webp",
+      side: "/mustang/gt/side.webp",
+      interior: "/mustang/gt/interior.webp"
     },
 
     sound: {
@@ -82,10 +82,10 @@ export const mustangs = [
     trim: "Fastback",
 
     images: {
-      hero: "/mustang/dark-horse/hero.png",
-      front: "/mustang/dark-horse/front.png",
-      side: "/mustang/dark-horse/side.png",
-      interior: "/mustang/dark-horse/interior.png"
+      hero: "/mustang/dark-horse/hero.webp",
+      front: "/mustang/dark-horse/front.webp",
+      side: "/mustang/dark-horse/side.webp",
+      interior: "/mustang/dark-horse/interior.webp"
     },
 
     sound: {
@@ -119,10 +119,10 @@ export const mustangs = [
     trim: "Fastback",
 
     images: {
-      hero: "/mustang/dark-horse-sc/hero.png",
-      front: "/mustang/dark-horse-sc/front.png",
-      side: "/mustang/dark-horse-sc/side.png",
-      interior: "/mustang/dark-horse-sc/interior.png"
+      hero: "/mustang/dark-horse-sc/hero.webp",
+      front: "/mustang/dark-horse-sc/front.webp",
+      side: "/mustang/dark-horse-sc/side.webp",
+      interior: "/mustang/dark-horse-sc/interior.webp"
     },
 
     sound: {

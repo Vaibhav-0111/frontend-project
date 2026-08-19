@@ -31,7 +31,7 @@ export default function InteriorSection() {
           <div className="interior-card">
             <div className="interior-card__bg" />
             <img 
-              src="/interior.jpg" 
+              src="/interior.webp" 
               alt="Mustang Interior" 
               className="interior-card__image" 
             />
