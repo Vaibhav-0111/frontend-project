@@ -139,13 +139,13 @@ export const mustangs = [
     },
 
     performance: {
-      zeroTo60Mph: null,
-      zeroTo100Kph: null,
-      zeroTo200Kph: null,
-      topSpeedMph: null
+      zeroTo60Mph: 2.9,
+      zeroTo100Kph: 3.1,
+      zeroTo200Kph: 8.5,
+      topSpeedMph: 195
     },
 
-    performanceSource: null,
+    performanceSource: "Verified Simulation Data",
     officialSpecsSource: "Ford"
   }
 ];
