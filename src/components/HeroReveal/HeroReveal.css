@@ -1,5 +1,5 @@
 /* ============================================================
-   HERO REVEAL — CINEMATIC SCROLL
+   HERO REVEAL — SCROLL-DRIVEN VIDEO
    ============================================================ */
 
 .hero-scroll {
@@ -21,16 +21,22 @@
   justify-content: center;
 }
 
-/* ── Cinematic Car Image ────────────────────────────────────────── */
-.hero-car-img {
+/* Subtle noise-grain overlay */
+.hero-grain {
+  display: none;
+}
+
+/* ── Video ─────────────────────────────────────────────────── */
+.hero-video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center center;
-  z-index: 1;
-  filter: contrast(1.1) brightness(0.85);
+  z-index: 0;
+  display: block;
+  background: #000;
 }
 
 /* ── Vignette overlay ──────────────────────────────────────── */
@@ -48,26 +54,6 @@
   pointer-events: none;
 }
 
-/* ── Machine Info Layer ────────────────────────────────────── */
-.hero-machine-info {
-  position: absolute;
-  right: 6%;
-  top: 30%;
-  z-index: 10;
-  font-family: var(--font-heading);
-  font-size: 0.75rem;
-  letter-spacing: 0.15em;
-  color: var(--clr-silver-light);
-  text-align: right;
-  line-height: 1.8;
-}
-
-.hero-machine-info__hr {
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  margin: 0.5rem 0;
-}
-
 /* ── Hero copy ─────────────────────────────────────────────── */
 .hero-copy {
   position: absolute;
@@ -80,40 +66,59 @@
   gap: 0.6rem;
 }
 
+.hero-eyebrow {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--clr-silver);
+  margin-bottom: 0.2rem;
+}
+
 .hero-title {
   display: flex;
   flex-direction: column;
   line-height: 0.88;
 }
 
-.hero-title__eyebrow {
-  font-family: var(--font-heading);
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.25em;
-  color: var(--clr-accent, #e3000f);
-  margin-bottom: 1rem;
+.hero-title__ford {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  letter-spacing: 0.08em;
+  color: var(--clr-white);
+  opacity: 0.55;
 }
 
 .hero-title__mustang {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 8vw, 7rem);
+  font-size: clamp(5rem, 13vw, 11.5rem);
   letter-spacing: 0.04em;
   color: var(--clr-white);
-  line-height: 0.95;
+  line-height: 0.9;
+}
+
+.hero-tagline {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 2.2vw, 1.45rem);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--clr-white-soft);
+  margin-top: 0.8rem;
+  text-transform: uppercase;
 }
 
 .hero-sub {
   font-family: var(--font-body);
-  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+  font-size: clamp(0.82rem, 1.2vw, 0.95rem);
   font-weight: 300;
   color: var(--clr-silver-light);
-  line-height: 1.6;
-  max-width: 420px;
-  margin-top: 1.5rem;
+  line-height: 1.7;
+  max-width: 360px;
+  margin-top: 0.2rem;
 }
 
-/* ── CTA Button ─────────────────────────────────────────────── */
+/* ── CTA Group ─────────────────────────────────────────────── */
 .hero-cta-group {
   display: flex;
   gap: 1.5rem;
@@ -122,6 +127,7 @@
   margin-top: 1.2rem;
 }
 
+/* ── CTA Button ─────────────────────────────────────────────── */
 .hero-cta {
   display: inline-flex;
   align-items: center;
@@ -171,6 +177,15 @@
 }
 .hero-cta:active {
   transform: translateY(0);
+}
+
+.hero-cta--secondary {
+  background: transparent;
+  color: var(--clr-white, #fff);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.hero-cta--secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ── Scroll hint ─────────────────────────────────────────────── */
@@ -223,11 +238,12 @@
 
 @media (max-width: 480px) {
   .hero-scroll {
-    height: 200vh;
+    height: 250vh;
   }
 
-  .hero-machine-info {
-    display: none; /* Hide on mobile to save space */
+  .hero-video {
+    object-fit: cover;
+    object-position: center center;
   }
 
   .hero-copy {
@@ -238,13 +254,25 @@
     gap: 0.45rem;
   }
 
+  .hero-title__ford {
+    font-size: clamp(2.8rem, 14vw, 4rem);
+  }
+
   .hero-title__mustang {
-    font-size: clamp(3rem, 16vw, 5rem);
+    font-size: clamp(4rem, 20vw, 6rem);
+  }
+
+  .hero-tagline {
+    font-size: 0.85rem;
   }
 
   .hero-sub {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     max-width: 100%;
+  }
+
+  .hero-sub__br {
+    display: none;
   }
 
   .hero-cta {
