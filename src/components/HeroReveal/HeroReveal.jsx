@@ -16,27 +16,30 @@ export default function HeroReveal({ onVideoReady }) {
   });
 
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
+    stiffness: 80,
+    damping: 25,
+    restDelta: 0.0001
   });
 
-  const lastUpdateTime = useRef(0);
-
-  useMotionValueEvent(smoothProgress, "change", (latest) => {
-    const video = videoRef.current;
-    if (!video || !isReady) return;
-
-    const now = performance.now();
-    if (now - lastUpdateTime.current < 33) return;
-
-    const targetTime = Math.round((latest * video.duration) * 100) / 100;
-
-    if (Math.abs(video.currentTime - targetTime) > 0.03) {
-      lastUpdateTime.current = now;
-      video.currentTime = Math.min(targetTime, video.duration - 0.05);
-    }
-  });
+  useEffect(() => {
+    let frameId;
+    const syncVideo = () => {
+      const video = videoRef.current;
+      if (video && isReady && video.duration) {
+        const latest = smoothProgress.get();
+        const targetTime = latest * video.duration;
+        
+        // Only update if difference is noticeable, avoiding unnecessary decoder work
+        if (Math.abs(video.currentTime - targetTime) > 0.02) {
+          video.currentTime = Math.min(targetTime, video.duration - 0.05);
+        }
+      }
+      frameId = requestAnimationFrame(syncVideo);
+    };
+    
+    frameId = requestAnimationFrame(syncVideo);
+    return () => cancelAnimationFrame(frameId);
+  }, [isReady, smoothProgress]);
 
   useEffect(() => {
     const video = videoRef.current;

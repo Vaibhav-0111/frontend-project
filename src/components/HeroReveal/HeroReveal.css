@@ -182,6 +182,7 @@
 }
 
 .hero-cta--secondary {
+  position: relative;
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
   border: none;
@@ -191,7 +192,36 @@
   text-decoration: underline;
   text-underline-offset: 4px;
   text-decoration-color: rgba(255,255,255,0.3);
+  overflow: hidden;
 }
+
+/* Scanning highlight effect */
+.hero-cta--secondary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.6),
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transform: skewX(-20deg);
+  animation: shimmerCTA 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmerCTA {
+  0% { left: -100%; }
+  35% { left: 200%; }
+  100% { left: 200%; }
+}
+
 .hero-cta--secondary::before {
   display: none;
 }
@@ -202,6 +232,7 @@
   box-shadow: none;
   background: transparent;
 }
+
 
 /* ── Scroll hint ─────────────────────────────────────────────── */
 .hero-scroll-hint {
