@@ -24,8 +24,8 @@
   --clr-white-dim: #cccccc;
   --clr-white-soft: #e8e8e8;
   --clr-white: #ffffff;
-  --clr-accent: #c0392b;       /* Mustang Red — restrained */
-  --clr-accent-glow: rgba(192, 57, 43, 0.12);
+  --clr-accent: #e63946;       /* Mustang Red — vibrant */
+  --clr-accent-glow: rgba(230, 57, 70, 0.15);
   --clr-metallic: #8a8a8a;
   --clr-metallic-light: #b5b5b5;
 

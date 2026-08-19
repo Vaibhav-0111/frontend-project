@@ -90,6 +90,7 @@
   letter-spacing: 0.08em;
   color: var(--clr-white);
   opacity: 0.55;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 
 .hero-title__mustang {
@@ -98,6 +99,7 @@
   letter-spacing: 0.04em;
   color: var(--clr-white);
   line-height: 0.9;
+  text-shadow: 0 8px 30px rgba(0,0,0,0.6);
 }
 
 .hero-tagline {
