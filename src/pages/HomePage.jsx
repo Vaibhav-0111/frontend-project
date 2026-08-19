@@ -11,11 +11,11 @@ import Loader from '../components/Loader/Loader';
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Safety fallback in case video fails to load or takes too long
+  // No video to wait for — dismiss loader after a short branded pause
   useEffect(() => {
     const fallback = setTimeout(() => {
       setIsLoading(false);
-    }, 6000); // Max 6 seconds of loading screen
+    }, 2500);
     return () => clearTimeout(fallback);
   }, []);
 
@@ -26,7 +26,7 @@ export default function HomePage() {
       </AnimatePresence>
 
       <Navbar />
-      <HeroReveal onVideoReady={() => setIsLoading(false)} />
+      <HeroReveal />
       <DesignSection />
       <PerformanceSection />
       <InteriorSection />

@@ -25,9 +25,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
+  height: 80px;
   max-width: 1440px;
   margin: 0 auto;
+  transition: height 0.4s ease;
+}
+
+.navbar--scrolled .navbar__inner {
+  height: 60px;
 }
 
 /* Brand */
@@ -53,6 +58,11 @@
   font-size: 1.25rem;
   letter-spacing: 0.18em;
   color: var(--clr-white);
+  transition: font-size 0.4s ease;
+}
+
+.navbar--scrolled .navbar__brand-name {
+  font-size: 1.1rem;
 }
 
 /* Nav Links */

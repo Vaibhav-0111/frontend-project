@@ -13,10 +13,11 @@ function updateCarImg(imgEl, W, H, normalizedSpeed, activeView) {
   const shakeY = normalizedSpeed > 0.05 ? (Math.random() - 0.5) * normalizedSpeed * 1.5 : 0;
   const scale  = 1 + normalizedSpeed * 0.05;   // slightly more pronounced grow
 
-  // Make the car much larger as requested (25-40% bigger)
-  const w   = Math.min(W * 0.75, 900);
+  // Reduce max width to prevent blurry upscaling on low-res images
+  const w   = Math.min(W * 0.70, 750);
   const bx  = (W - w) * 0.5 + shakeX;         // centered horizontally
-  const by  = H * 0.18 + shakeY;               // sits above the gauge
+  // Shift the image higher up the screen
+  const by  = H * 0.06 + shakeY;
 
   imgEl.style.width     = `${w}px`;
   imgEl.style.left      = `${bx}px`;
@@ -215,10 +216,11 @@ export default function PerformanceSimulator({ car, activeView = 'hero', isMuted
         className="perf-car-img"
         draggable={false}
         style={{
-          width: '75%', // initial style matching the JS updater
-          left: '12.5%',
-          top: '18%',
-          transform: activeView === 'side' ? 'scaleX(-1)' : 'none',
+          width: '70%', 
+          maxWidth: '750px',
+          left: '50%',
+          transform: `translateX(-50%) ${activeView === 'side' ? 'scaleX(-1)' : ''}`,
+          top: '6%',
         }}
       />
 
